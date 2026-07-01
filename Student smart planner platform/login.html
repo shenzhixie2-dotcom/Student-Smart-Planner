@@ -1,0 +1,635 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Login / Register — Smart Planner</title>
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    /* ── Layout ── */
+    .login-page { display:grid; grid-template-columns:1fr 1fr; min-height:100vh; }
+
+    /* ── Left panel ── */
+    .login-left {
+      background: linear-gradient(150deg, #0A1A3A 0%, #1B3A6B 55%, #23508A 100%);
+      display:flex; flex-direction:column; padding:48px 52px;
+      position:relative; overflow:hidden;
+    }
+    .login-left::before {
+      content:''; position:absolute; inset:0;
+      background:
+        radial-gradient(ellipse 70% 50% at 10% 80%, rgba(78,158,154,.18) 0%, transparent 70%),
+        radial-gradient(ellipse 50% 60% at 90% 20%, rgba(59,110,212,.15) 0%, transparent 70%);
+      pointer-events:none;
+    }
+    .login-left::after {
+      content:''; position:absolute; inset:0;
+      background-image:radial-gradient(circle, rgba(255,255,255,.06) 1px, transparent 1px);
+      background-size:28px 28px; pointer-events:none;
+    }
+    .left-content { position:relative; z-index:1; display:flex; flex-direction:column; height:100%; }
+
+    /* ── Carousel ── */
+    .carousel-wrap { flex:1; display:flex; flex-direction:column; justify-content:center; margin-top:40px; }
+    .carousel-track { position:relative; min-height:300px; }
+    .feature-slide { position:absolute; inset:0; opacity:0; transform:translateY(16px); transition:opacity .45s ease, transform .45s ease; pointer-events:none; }
+    .feature-slide.active { opacity:1; transform:translateY(0); pointer-events:auto; }
+
+    .mini-preview { background:rgba(255,255,255,.07); border:1px solid rgba(255,255,255,.12); border-radius:14px; padding:16px; margin-bottom:16px; backdrop-filter:blur(8px); }
+    .mini-preview-title { font-size:.6875rem; font-weight:700; color:rgba(255,255,255,.4); text-transform:uppercase; letter-spacing:.1em; margin-bottom:10px; }
+
+    .mini-schedule { display:flex; flex-direction:column; gap:6px; }
+    .mini-sched-row { display:flex; align-items:center; gap:8px; padding:7px 10px; background:rgba(255,255,255,.06); border-radius:8px; }
+    .mini-sched-dot { width:7px; height:7px; border-radius:50%; flex-shrink:0; }
+    .mini-sched-label { font-size:.75rem; color:rgba(255,255,255,.75); flex:1; }
+    .mini-sched-time { font-size:.6875rem; color:rgba(255,255,255,.4); }
+    .mini-sched-check { width:14px; height:14px; border-radius:50%; display:flex; align-items:center; justify-content:center; }
+
+    .mini-assign { display:flex; flex-direction:column; gap:5px; }
+    .mini-assign-row { display:flex; align-items:center; justify-content:space-between; padding:7px 10px; background:rgba(255,255,255,.06); border-radius:8px; }
+    .mini-assign-name { font-size:.75rem; color:rgba(255,255,255,.75); }
+    .mini-assign-badge { font-size:.625rem; font-weight:700; padding:2px 8px; border-radius:999px; }
+    .badge-done { background:rgba(34,197,94,.25); color:#86efac; }
+    .badge-active { background:rgba(59,110,212,.3); color:#93c5fd; }
+    .badge-due { background:rgba(245,158,11,.25); color:#fcd34d; }
+
+    .mini-notes { display:grid; grid-template-columns:1fr 1fr; gap:6px; }
+    .mini-note-card { padding:9px 10px; border-radius:8px; }
+    .mini-note-title { font-size:.6875rem; font-weight:700; color:rgba(255,255,255,.85); margin-bottom:3px; }
+    .mini-note-text { font-size:.625rem; color:rgba(255,255,255,.45); line-height:1.4; }
+
+    .mini-chat { display:flex; flex-direction:column; gap:6px; }
+    .mini-msg { display:flex; gap:6px; align-items:flex-end; }
+    .mini-msg.me { flex-direction:row-reverse; }
+    .mini-avatar { width:20px; height:20px; border-radius:50%; flex-shrink:0; display:flex; align-items:center; justify-content:center; font-size:.5rem; font-weight:700; color:#fff; }
+    .mini-bubble { font-size:.6875rem; padding:5px 9px; border-radius:10px; color:rgba(255,255,255,.8); max-width:140px; line-height:1.4; }
+    .mini-msg.other .mini-bubble { background:rgba(255,255,255,.1); border-radius:2px 10px 10px 10px; }
+    .mini-msg.me .mini-bubble { background:rgba(59,110,212,.5); border-radius:10px 2px 10px 10px; }
+
+    .slide-label { display:flex; align-items:center; gap:10px; margin-bottom:8px; }
+    .slide-icon { width:38px; height:38px; border-radius:10px; background:rgba(255,255,255,.1); border:1px solid rgba(255,255,255,.15); display:flex; align-items:center; justify-content:center; font-size:1rem; }
+    .slide-name { font-size:1.0625rem; font-weight:700; color:#fff; letter-spacing:-.02em; }
+    .slide-desc { font-size:.875rem; color:rgba(255,255,255,.6); line-height:1.5; margin-bottom:14px; }
+
+    .carousel-dots { display:flex; gap:6px; margin-top:16px; }
+    .c-dot { width:6px; height:6px; border-radius:3px; background:rgba(255,255,255,.25); transition:all .4s ease; cursor:pointer; }
+    .c-dot.active { width:22px; background:var(--teal); }
+
+    /* ── Checkmark bullets ── */
+    .feature-bullet { display:flex; align-items:center; gap:12px; padding:9px 12px; border-radius:10px; cursor:default; transition:background .25s ease; margin-bottom:4px; }
+    .feature-bullet:hover { background:rgba(255,255,255,.06); }
+    .check-circle { width:28px; height:28px; border-radius:50%; background:rgba(78,158,154,.2); border:1.5px solid rgba(78,158,154,.35); display:flex; align-items:center; justify-content:center; flex-shrink:0; transition:all .3s ease; }
+    .feature-bullet:hover .check-circle { background:rgba(78,158,154,.35); border-color:rgba(78,158,154,.6); }
+    .check-svg { width:14px; height:14px; }
+    .check-path { stroke:#4E9E9A; stroke-width:2.5; stroke-linecap:round; stroke-linejoin:round; fill:none; stroke-dasharray:22; stroke-dashoffset:22; transition:stroke-dashoffset 0s; }
+    .feature-bullet:hover .check-path { stroke-dashoffset:0; transition:stroke-dashoffset .8s cubic-bezier(.16,1,.3,1); }
+    .bullet-text { font-size:.875rem; color:rgba(255,255,255,.8); }
+
+    /* ── Right panel ── */
+    .login-right { display:flex; flex-direction:column; justify-content:center; align-items:center; padding:48px 40px; background:var(--surface); overflow:hidden; position:relative; }
+    .form-card { width:100%; max-width:370px; }
+
+    /* ── Tabs ── */
+    .form-tabs { display:flex; background:var(--bg); border-radius:999px; padding:4px; margin-bottom:28px; position:relative; }
+    .form-tab { flex:1; padding:9px 0; text-align:center; font-size:.875rem; font-weight:600; border-radius:999px; cursor:pointer; color:var(--text-muted); transition:color .3s; position:relative; z-index:1; }
+    .form-tab.active { color:var(--navy); }
+    .tabs-slider { position:absolute; top:4px; bottom:4px; left:4px; width:calc(50% - 4px); background:var(--surface); border-radius:999px; box-shadow:var(--shadow-sm); transition:transform .35s cubic-bezier(.34,1.56,.64,1); }
+    .form-tabs.show-register .tabs-slider { transform:translateX(100%); }
+
+    /* ── Form panels with slide transition ── */
+    .forms-container { position:relative; overflow:hidden; }
+    .form-panel { transition:transform .4s cubic-bezier(.4,0,.2,1), opacity .35s ease; }
+    .form-panel.login-panel { transform:translateX(0); opacity:1; }
+    .form-panel.register-panel { position:absolute; top:0; left:0; width:100%; transform:translateX(100%); opacity:0; pointer-events:none; }
+    .forms-container.show-register .login-panel { transform:translateX(-100%); opacity:0; pointer-events:none; }
+    .forms-container.show-register .register-panel { transform:translateX(0); opacity:1; pointer-events:auto; position:relative; }
+
+    /* ── Input states ── */
+    .input-wrap { position:relative; }
+    .input-icon { position:absolute; left:13px; top:50%; transform:translateY(-50%); color:var(--text-light); pointer-events:none; transition:color .2s; }
+    .input-wrap .form-control { padding-left:38px; transition:border-color .2s, box-shadow .2s; }
+    .input-wrap .form-control:focus { border-color:var(--navy); box-shadow:0 0 0 3px rgba(27,58,107,.1); }
+    .input-wrap .form-control:focus + .input-status,
+    .input-wrap .form-control.valid + .input-status .ok-icon { opacity:1; }
+    .input-wrap.focused .input-icon { color:var(--navy); }
+    .input-wrap .form-control.valid { border-color:#22C55E; }
+    .input-wrap .form-control.error { border-color:#EF4444; }
+    .input-status { position:absolute; right:12px; top:50%; transform:translateY(-50%); pointer-events:none; }
+    .ok-icon { opacity:0; transition:opacity .25s; }
+    .eye-btn { position:absolute; right:12px; top:50%; transform:translateY(-50%); color:var(--text-light); padding:4px; cursor:pointer; line-height:0; background:none; border:none; }
+    .eye-btn:hover { color:var(--text-muted); }
+    .field-msg { font-size:.75rem; margin-top:4px; height:16px; transition:all .2s; }
+    .field-msg.error { color:#EF4444; }
+    .field-msg.ok { color:#22C55E; }
+
+    /* ── Password strength ── */
+    .pwd-strength { margin-top:6px; }
+    .pwd-strength-bar { display:flex; gap:4px; margin-bottom:4px; }
+    .pwd-seg { height:3px; flex:1; border-radius:2px; background:var(--border); transition:background .3s ease; }
+    .pwd-seg.weak { background:#EF4444; }
+    .pwd-seg.fair { background:#F59E0B; }
+    .pwd-seg.good { background:#3B6ED4; }
+    .pwd-seg.strong { background:#22C55E; }
+    .pwd-strength-label { font-size:.7rem; color:var(--text-light); }
+
+    /* ── Social buttons ── */
+    .social-btn { display:flex; align-items:center; justify-content:center; gap:10px; padding:10px 16px; border:1.5px solid var(--border); border-radius:var(--r-md); font-size:.875rem; font-weight:600; color:var(--text); background:var(--surface); cursor:pointer; transition:all .25s ease; width:100%; }
+    .social-btn:hover { border-color:var(--border-dark); box-shadow:var(--shadow-sm); background:var(--bg); transform:translateY(-1px); }
+    .social-btn:active { transform:translateY(0); }
+
+    /* ── Success overlay ── */
+    .success-overlay { position:absolute; inset:0; background:var(--surface); display:flex; flex-direction:column; align-items:center; justify-content:center; gap:16px; opacity:0; pointer-events:none; transition:opacity .4s ease; z-index:10; }
+    .success-overlay.show { opacity:1; pointer-events:auto; }
+    .success-circle { width:72px; height:72px; border-radius:50%; background:linear-gradient(135deg,#22C55E,#16a34a); display:flex; align-items:center; justify-content:center; transform:scale(0); transition:transform .5s cubic-bezier(.34,1.56,.64,1); }
+    .success-overlay.show .success-circle { transform:scale(1); }
+    .success-check { stroke:#fff; stroke-width:2.5; stroke-linecap:round; stroke-linejoin:round; fill:none; stroke-dasharray:28; stroke-dashoffset:28; transition:stroke-dashoffset .5s .3s ease; }
+    .success-overlay.show .success-check { stroke-dashoffset:0; }
+
+    @media (max-width:800px) {
+      .login-page { grid-template-columns:1fr; }
+      .login-left { display:none; }
+      .login-right { padding:32px 24px; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="login-page">
+
+  <!-- ══ LEFT PANEL ══ -->
+  <div class="login-left">
+    <div class="left-content">
+
+      <a href="index.html" style="display:inline-flex;align-items:center;gap:10px;text-decoration:none">
+        <svg width="36" height="36" viewBox="0 0 36 36" fill="none">
+          <defs><linearGradient id="lg_left" x1="0" y1="0" x2="36" y2="36" gradientUnits="userSpaceOnUse"><stop offset="0%" stop-color="#0F2449"/><stop offset="100%" stop-color="#3B6ED4"/></linearGradient></defs>
+          <rect width="36" height="36" rx="9" fill="url(#lg_left)"/>
+          <rect x="9" y="11" width="14" height="2.5" rx="1.25" fill="white" opacity="0.95"/>
+          <rect x="9" y="16.5" width="10" height="2" rx="1" fill="white" opacity="0.7"/>
+          <rect x="9" y="21.5" width="7" height="2" rx="1" fill="white" opacity="0.5"/>
+          <circle cx="25.5" cy="24.5" r="6" fill="#4E9E9A"/>
+          <path d="M22.5 24.5l2 2 4-4" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <span style="font-size:1.0625rem;font-weight:800;color:#fff;letter-spacing:-.03em">Smart<span style="color:#4E9E9A">Planner</span></span>
+      </a>
+
+      <div style="margin-top:28px">
+        <h2 style="color:#fff;font-size:clamp(1.5rem,2.5vw,1.9rem);font-weight:800;letter-spacing:-.04em;line-height:1.2;margin-bottom:8px">
+          Your academic life,<br>organized beautifully
+        </h2>
+        <p style="color:rgba(255,255,255,.55);font-size:.875rem;line-height:1.7">
+          Everything you need to study smarter — in one place.
+        </p>
+      </div>
+
+      <!-- Carousel -->
+      <div class="carousel-wrap">
+        <div class="carousel-track">
+
+          <!-- Slide 0: Schedule -->
+          <div class="feature-slide active" id="slide0">
+            <div class="slide-label">
+              <div class="slide-icon">
+                <svg width="18" height="18" fill="none" stroke="rgba(255,255,255,.85)" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+              </div>
+              <div class="slide-name">Schedule Planner</div>
+            </div>
+            <div class="slide-desc">Plan your daily, weekly and monthly study sessions effortlessly.</div>
+            <div class="mini-preview">
+              <div class="mini-preview-title">Today's Schedule</div>
+              <div class="mini-schedule">
+                <div class="mini-sched-row"><div class="mini-sched-dot" style="background:#4E9E9A"></div><div class="mini-sched-label">Mathematics study</div><div class="mini-sched-time">09:00</div><div class="mini-sched-check" style="background:rgba(34,197,94,.2)"><svg width="9" height="9" viewBox="0 0 12 12"><path d="M2 6l3 3 5-5" stroke="#22C55E" stroke-width="2" stroke-linecap="round" fill="none"/></svg></div></div>
+                <div class="mini-sched-row"><div class="mini-sched-dot" style="background:#3B6ED4"></div><div class="mini-sched-label">Group assignment meeting</div><div class="mini-sched-time">13:00</div><div class="mini-sched-check" style="background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.15)"></div></div>
+                <div class="mini-sched-row"><div class="mini-sched-dot" style="background:#F59E0B"></div><div class="mini-sched-label">Web Dev lecture notes</div><div class="mini-sched-time">15:30</div><div class="mini-sched-check" style="background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.15)"></div></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Slide 1: Assignments -->
+          <div class="feature-slide" id="slide1">
+            <div class="slide-label">
+              <div class="slide-icon">
+                <svg width="18" height="18" fill="none" stroke="rgba(255,255,255,.85)" stroke-width="2" viewBox="0 0 24 24"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+              </div>
+              <div class="slide-name">Assignment Tracker</div>
+            </div>
+            <div class="slide-desc">Monitor deadlines, track progress and never miss a submission again.</div>
+            <div class="mini-preview">
+              <div class="mini-preview-title">Assignment Status</div>
+              <div class="mini-assign">
+                <div class="mini-assign-row"><div class="mini-assign-name">Login/Register Page</div><div class="mini-assign-badge badge-done">Completed</div></div>
+                <div class="mini-assign-row"><div class="mini-assign-name">MySQL ERD Diagram</div><div class="mini-assign-badge badge-active">In Progress</div></div>
+                <div class="mini-assign-row"><div class="mini-assign-name">Presentation Script</div><div class="mini-assign-badge badge-due">Due Soon</div></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Slide 2: Notes -->
+          <div class="feature-slide" id="slide2">
+            <div class="slide-label">
+              <div class="slide-icon">
+                <svg width="18" height="18" fill="none" stroke="rgba(255,255,255,.85)" stroke-width="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M16 13H8M16 17H8"/></svg>
+              </div>
+              <div class="slide-name">Smart Notes</div>
+            </div>
+            <div class="slide-desc">Create, organize and search your study notes in one clean workspace.</div>
+            <div class="mini-preview">
+              <div class="mini-preview-title">Your Notes</div>
+              <div class="mini-notes">
+                <div class="mini-note-card" style="background:rgba(59,110,212,.18)"><div class="mini-note-title">Web Dev — Ch.3</div><div class="mini-note-text">HTML5 semantic tags, CSS Flexbox…</div></div>
+                <div class="mini-note-card" style="background:rgba(78,158,154,.18)"><div class="mini-note-title">Calculus Notes</div><div class="mini-note-text">Integration by parts…</div></div>
+                <div class="mini-note-card" style="background:rgba(245,158,11,.18)"><div class="mini-note-title">Group Planning</div><div class="mini-note-text">Task allocation, Week 1…</div></div>
+                <div class="mini-note-card" style="background:rgba(34,197,94,.15)"><div class="mini-note-title">Biology Revision</div><div class="mini-note-text">Cell structure, mitochondria…</div></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Slide 3: Group -->
+          <div class="feature-slide" id="slide3">
+            <div class="slide-label">
+              <div class="slide-icon">
+                <svg width="18" height="18" fill="none" stroke="rgba(255,255,255,.85)" stroke-width="2" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+              </div>
+              <div class="slide-name">Group Collaboration</div>
+            </div>
+            <div class="slide-desc">Chat, share files and track group progress together in real time.</div>
+            <div class="mini-preview">
+              <div class="mini-preview-title">Group Chat</div>
+              <div class="mini-chat">
+                <div class="mini-msg other"><div class="mini-avatar" style="background:#2E5090">MP</div><div class="mini-bubble">Hey! I finished the documentation ✔</div></div>
+                <div class="mini-msg me"><div class="mini-avatar" style="background:#4E9E9A">XS</div><div class="mini-bubble">Looks great! Meet at 2PM 🎯</div></div>
+                <div class="mini-msg other"><div class="mini-avatar" style="background:#7c3aed">KQ</div><div class="mini-bubble">I'll update the shared doc now</div></div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <div class="carousel-dots" id="carouselDots">
+          <div class="c-dot active" onclick="goSlide(0)"></div>
+          <div class="c-dot" onclick="goSlide(1)"></div>
+          <div class="c-dot" onclick="goSlide(2)"></div>
+          <div class="c-dot" onclick="goSlide(3)"></div>
+        </div>
+      </div>
+
+      <!-- Bullets -->
+      <div style="margin-top:20px;padding-top:20px;border-top:1px solid rgba(255,255,255,.1)">
+        <div class="feature-bullet"><div class="check-circle"><svg class="check-svg" viewBox="0 0 20 20"><path class="check-path" d="M4 10l5 5 7-7"/></svg></div><span class="bullet-text">Personal schedule & deadline tracking</span></div>
+        <div class="feature-bullet"><div class="check-circle"><svg class="check-svg" viewBox="0 0 20 20"><path class="check-path" d="M4 10l5 5 7-7"/></svg></div><span class="bullet-text">Assignment records & progress monitoring</span></div>
+        <div class="feature-bullet"><div class="check-circle"><svg class="check-svg" viewBox="0 0 20 20"><path class="check-path" d="M4 10l5 5 7-7"/></svg></div><span class="bullet-text">Group collaboration & shared workspaces</span></div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ══ RIGHT PANEL ══ -->
+  <div class="login-right">
+
+    <!-- Success overlay -->
+    <div class="success-overlay" id="successOverlay">
+      <div class="success-circle">
+        <svg width="32" height="32" viewBox="0 0 32 32"><path class="success-check" d="M7 16l6 6 12-12"/></svg>
+      </div>
+      <div style="text-align:center">
+        <div style="font-size:1.125rem;font-weight:800;color:var(--text);letter-spacing:-.02em" id="successTitle">Login successful!</div>
+        <div style="font-size:.875rem;color:var(--text-muted);margin-top:4px">Redirecting to your dashboard…</div>
+      </div>
+    </div>
+
+    <div class="form-card">
+
+      <!-- Logo -->
+      <a href="index.html" style="display:inline-flex;align-items:center;gap:10px;text-decoration:none;margin-bottom:24px">
+        <svg width="34" height="34" viewBox="0 0 36 36" fill="none">
+          <defs><linearGradient id="lg_right" x1="0" y1="0" x2="36" y2="36" gradientUnits="userSpaceOnUse"><stop offset="0%" stop-color="#0F2449"/><stop offset="100%" stop-color="#3B6ED4"/></linearGradient></defs>
+          <rect width="36" height="36" rx="9" fill="url(#lg_right)"/>
+          <rect x="9" y="11" width="14" height="2.5" rx="1.25" fill="white" opacity="0.95"/>
+          <rect x="9" y="16.5" width="10" height="2" rx="1" fill="white" opacity="0.7"/>
+          <rect x="9" y="21.5" width="7" height="2" rx="1" fill="white" opacity="0.5"/>
+          <circle cx="25.5" cy="24.5" r="6" fill="#4E9E9A"/>
+          <path d="M22.5 24.5l2 2 4-4" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <span style="font-size:1rem;font-weight:800;color:var(--navy);letter-spacing:-.03em">Smart<span style="color:var(--teal)">Planner</span></span>
+      </a>
+
+      <!-- Tabs -->
+      <div class="form-tabs" id="formTabs">
+        <div class="tabs-slider"></div>
+        <div class="form-tab active" data-tab="login">Sign In</div>
+        <div class="form-tab" data-tab="register">Register</div>
+      </div>
+
+      <!-- Forms container -->
+      <div class="forms-container" id="formsContainer">
+
+        <!-- LOGIN PANEL -->
+        <div class="form-panel login-panel">
+          <h3 style="font-size:1.3rem;font-weight:800;color:var(--text);letter-spacing:-.03em;margin-bottom:3px">Welcome back</h3>
+          <p style="color:var(--text-muted);font-size:.875rem;margin-bottom:20px">Access your study planner dashboard</p>
+
+          <form id="loginForm" novalidate>
+            <div class="form-group">
+              <label class="form-label">Email address</label>
+              <div class="input-wrap" id="loginEmailWrap">
+                <svg class="input-icon" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><path d="M22 6l-10 7L2 6"/></svg>
+                <input type="email" class="form-control" placeholder="your@email.com" id="loginEmail" autocomplete="email">
+                <div class="input-status">
+                  <svg class="ok-icon" width="14" height="14" viewBox="0 0 16 16"><circle cx="8" cy="8" r="7" fill="#22C55E"/><path d="M5 8l2 2 4-4" stroke="#fff" stroke-width="1.5" stroke-linecap="round" fill="none"/></svg>
+                </div>
+              </div>
+              <div class="field-msg" id="loginEmailMsg"></div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" style="display:flex;justify-content:space-between">
+                Password
+                <a href="#" style="font-size:.8rem;color:var(--navy);font-weight:500" onclick="showForgot(event)">Forgot password?</a>
+              </label>
+              <div class="input-wrap" id="loginPwdWrap">
+                <svg class="input-icon" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                <input type="password" class="form-control" placeholder="Enter your password" id="loginPassword" autocomplete="current-password" style="padding-right:40px">
+                <button type="button" class="eye-btn" onclick="togglePwd('loginPassword',this)" tabindex="-1">
+                  <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                </button>
+              </div>
+              <div class="field-msg" id="loginPwdMsg"></div>
+            </div>
+
+            <div class="form-row" style="margin-bottom:18px">
+              <label style="display:flex;align-items:center;gap:7px;font-size:.875rem;color:var(--text-muted);cursor:pointer">
+                <input type="checkbox" style="accent-color:var(--navy);width:15px;height:15px" id="rememberMe"> Remember me
+              </label>
+            </div>
+
+            <button type="submit" class="btn btn-primary" style="width:100%;justify-content:center;padding:13px 20px;border-radius:var(--r-md);font-size:.9375rem" id="loginBtn">
+              Sign In
+              <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+            </button>
+
+            <div style="display:flex;align-items:center;gap:12px;margin:18px 0;color:var(--text-light);font-size:.8125rem">
+              <div style="flex:1;height:1px;background:var(--border)"></div>or continue with<div style="flex:1;height:1px;background:var(--border)"></div>
+            </div>
+
+            <div style="display:flex;flex-direction:column;gap:9px">
+              <button type="button" class="social-btn" onclick="socialLogin('Google')">
+                <svg width="18" height="18" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+                Continue with Google
+              </button>
+              <button type="button" class="social-btn" onclick="socialLogin('Microsoft')">
+                <svg width="18" height="18" viewBox="0 0 24 24"><path fill="#F25022" d="M1 1h10v10H1z"/><path fill="#7FBA00" d="M13 1h10v10H13z"/><path fill="#00A4EF" d="M1 13h10v10H1z"/><path fill="#FFB900" d="M13 13h10v10H13z"/></svg>
+                Continue with Microsoft
+              </button>
+            </div>
+          </form>
+
+          <p style="text-align:center;margin-top:18px;font-size:.875rem;color:var(--text-muted)">
+            No account? <a href="#" onclick="switchTab('register');return false" style="color:var(--navy);font-weight:600">Create one free →</a>
+          </p>
+        </div>
+
+        <!-- REGISTER PANEL -->
+        <div class="form-panel register-panel">
+          <h3 style="font-size:1.3rem;font-weight:800;color:var(--text);letter-spacing:-.03em;margin-bottom:3px">Create account</h3>
+          <p style="color:var(--text-muted);font-size:.875rem;margin-bottom:20px">Start organizing your academic life today</p>
+
+          <form id="registerForm" novalidate>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+              <div class="form-group">
+                <label class="form-label">First name</label>
+                <input type="text" class="form-control" placeholder="John" id="regFirst" autocomplete="given-name">
+                <div class="field-msg" id="regFirstMsg"></div>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Last name</label>
+                <input type="text" class="form-control" placeholder="Doe" id="regLast" autocomplete="family-name">
+                <div class="field-msg" id="regLastMsg"></div>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Email address</label>
+              <div class="input-wrap">
+                <svg class="input-icon" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><path d="M22 6l-10 7L2 6"/></svg>
+                <input type="email" class="form-control" placeholder="your@email.com" id="regEmail" autocomplete="email">
+                <div class="input-status">
+                  <svg class="ok-icon" width="14" height="14" viewBox="0 0 16 16"><circle cx="8" cy="8" r="7" fill="#22C55E"/><path d="M5 8l2 2 4-4" stroke="#fff" stroke-width="1.5" stroke-linecap="round" fill="none"/></svg>
+                </div>
+              </div>
+              <div class="field-msg" id="regEmailMsg"></div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Password</label>
+              <div class="input-wrap">
+                <svg class="input-icon" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                <input type="password" class="form-control" placeholder="Min. 8 characters" id="regPassword" autocomplete="new-password" style="padding-right:40px" oninput="checkStrength(this.value)">
+                <button type="button" class="eye-btn" onclick="togglePwd('regPassword',this)" tabindex="-1">
+                  <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                </button>
+              </div>
+              <div class="pwd-strength" id="pwdStrength" style="display:none">
+                <div class="pwd-strength-bar">
+                  <div class="pwd-seg" id="seg1"></div>
+                  <div class="pwd-seg" id="seg2"></div>
+                  <div class="pwd-seg" id="seg3"></div>
+                  <div class="pwd-seg" id="seg4"></div>
+                </div>
+                <div class="pwd-strength-label" id="strengthLabel">Too short</div>
+              </div>
+              <div class="field-msg" id="regPwdMsg"></div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Confirm password</label>
+              <div class="input-wrap">
+                <svg class="input-icon" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                <input type="password" class="form-control" placeholder="Repeat password" id="regConfirm" autocomplete="new-password" style="padding-right:40px">
+                <button type="button" class="eye-btn" onclick="togglePwd('regConfirm',this)" tabindex="-1">
+                  <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                </button>
+              </div>
+              <div class="field-msg" id="regConfirmMsg"></div>
+            </div>
+
+            <div class="form-group" style="margin-bottom:16px">
+              <label style="display:flex;align-items:flex-start;gap:8px;font-size:.8125rem;color:var(--text-muted);cursor:pointer;line-height:1.5">
+                <input type="checkbox" id="agreeTerms" style="accent-color:var(--navy);width:15px;height:15px;flex-shrink:0;margin-top:2px">
+                I agree to the <a href="#" style="color:var(--navy)">Terms</a> and <a href="#" style="color:var(--navy)">Privacy Policy</a>
+              </label>
+            </div>
+
+            <button type="submit" class="btn btn-primary" style="width:100%;justify-content:center;padding:13px 20px;border-radius:var(--r-md)" id="regBtn">
+              Create Account
+              <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+            </button>
+          </form>
+
+          <p style="text-align:center;margin-top:16px;font-size:.875rem;color:var(--text-muted)">
+            Have an account? <a href="#" onclick="switchTab('login');return false" style="color:var(--navy);font-weight:600">← Sign in</a>
+          </p>
+        </div>
+
+      </div><!-- /forms-container -->
+    </div><!-- /form-card -->
+  </div><!-- /login-right -->
+
+</div><!-- /login-page -->
+
+<script>
+// ── Tab switching with slide animation ──
+function switchTab(name) {
+  const tabs = document.getElementById('formTabs');
+  const container = document.getElementById('formsContainer');
+  document.querySelectorAll('.form-tab').forEach(t => t.classList.toggle('active', t.dataset.tab === name));
+  tabs.classList.toggle('show-register', name === 'register');
+  container.classList.toggle('show-register', name === 'register');
+}
+document.querySelectorAll('.form-tab').forEach(t => t.addEventListener('click', () => switchTab(t.dataset.tab)));
+
+// ── Password toggle ──
+function togglePwd(id, btn) {
+  const el = document.getElementById(id);
+  const isText = el.type === 'text';
+  el.type = isText ? 'password' : 'text';
+  btn.querySelector('svg').style.opacity = isText ? '1' : '0.5';
+}
+
+// ── Password strength ──
+function checkStrength(val) {
+  const wrap = document.getElementById('pwdStrength');
+  if (!val) { wrap.style.display = 'none'; return; }
+  wrap.style.display = 'block';
+  const segs = [document.getElementById('seg1'), document.getElementById('seg2'),
+                document.getElementById('seg3'), document.getElementById('seg4')];
+  segs.forEach(s => { s.className = 'pwd-seg'; });
+  let score = 0;
+  if (val.length >= 8) score++;
+  if (/[A-Z]/.test(val)) score++;
+  if (/[0-9]/.test(val)) score++;
+  if (/[^A-Za-z0-9]/.test(val)) score++;
+  const labels = ['Too short', 'Weak', 'Fair', 'Good', 'Strong'];
+  const cls = ['', 'weak', 'fair', 'good', 'strong'];
+  document.getElementById('strengthLabel').textContent = val.length < 8 ? 'Too short' : labels[score];
+  document.getElementById('strengthLabel').style.color = ['#aaa','#EF4444','#F59E0B','#3B6ED4','#22C55E'][val.length < 8 ? 0 : score];
+  for (let i = 0; i < score && val.length >= 8; i++) segs[i].className = 'pwd-seg ' + cls[score];
+}
+
+// ── Inline validation helpers ──
+function setField(inputEl, msgEl, state, msg) {
+  inputEl.classList.remove('valid','error');
+  msgEl.className = 'field-msg';
+  if (state === 'valid') { inputEl.classList.add('valid'); msgEl.classList.add('ok'); }
+  if (state === 'error') { inputEl.classList.add('error'); msgEl.classList.add('error'); }
+  msgEl.textContent = msg || '';
+}
+
+function validateEmail(val) { return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val); }
+
+// Live validation
+document.getElementById('loginEmail').addEventListener('blur', function() {
+  const msg = document.getElementById('loginEmailMsg');
+  if (!this.value) setField(this, msg, 'error', 'Email is required');
+  else if (!validateEmail(this.value)) setField(this, msg, 'error', 'Enter a valid email address');
+  else setField(this, msg, 'valid', '');
+});
+document.getElementById('loginPassword').addEventListener('blur', function() {
+  const msg = document.getElementById('loginPwdMsg');
+  if (!this.value) setField(this, msg, 'error', 'Password is required');
+  else setField(this, msg, 'valid', '');
+});
+document.getElementById('regEmail').addEventListener('blur', function() {
+  const msg = document.getElementById('regEmailMsg');
+  if (!this.value) setField(this, msg, 'error', 'Email is required');
+  else if (!validateEmail(this.value)) setField(this, msg, 'error', 'Enter a valid email address');
+  else setField(this, msg, 'valid', '');
+});
+document.getElementById('regConfirm').addEventListener('blur', function() {
+  const msg = document.getElementById('regConfirmMsg');
+  const pwd = document.getElementById('regPassword').value;
+  if (!this.value) setField(this, msg, 'error', 'Please confirm your password');
+  else if (this.value !== pwd) setField(this, msg, 'error', 'Passwords do not match');
+  else setField(this, msg, 'valid', 'Passwords match');
+});
+
+// ── Login submit ──
+document.getElementById('loginForm').addEventListener('submit', function(e) {
+  e.preventDefault();
+  const email = document.getElementById('loginEmail');
+  const pwd = document.getElementById('loginPassword');
+  let ok = true;
+  if (!email.value || !validateEmail(email.value)) { setField(email, document.getElementById('loginEmailMsg'), 'error', 'Enter a valid email'); ok = false; }
+  if (!pwd.value) { setField(pwd, document.getElementById('loginPwdMsg'), 'error', 'Password is required'); ok = false; }
+  if (!ok) return;
+  const btn = document.getElementById('loginBtn');
+  btn.disabled = true;
+  btn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="animation:spin-slow .8s linear infinite"><path d="M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0z" opacity=".25"/><path d="M21 12a9 9 0 0 1-9 9" stroke-linecap="round"/></svg> Signing in…';
+  setTimeout(() => showSuccess('login'), 800);
+});
+
+// ── Register submit ──
+document.getElementById('registerForm').addEventListener('submit', function(e) {
+  e.preventDefault();
+  const first = document.getElementById('regFirst');
+  const last = document.getElementById('regLast');
+  const email = document.getElementById('regEmail');
+  const pwd = document.getElementById('regPassword');
+  const confirm = document.getElementById('regConfirm');
+  const agree = document.getElementById('agreeTerms');
+  let ok = true;
+  if (!first.value.trim()) { setField(first, document.getElementById('regFirstMsg'), 'error', 'Required'); ok = false; }
+  if (!last.value.trim()) { setField(last, document.getElementById('regLastMsg'), 'error', 'Required'); ok = false; }
+  if (!email.value || !validateEmail(email.value)) { setField(email, document.getElementById('regEmailMsg'), 'error', 'Enter a valid email'); ok = false; }
+  if (!pwd.value || pwd.value.length < 8) { setField(pwd, document.getElementById('regPwdMsg'), 'error', 'Min. 8 characters'); ok = false; }
+  if (confirm.value !== pwd.value) { setField(confirm, document.getElementById('regConfirmMsg'), 'error', 'Passwords do not match'); ok = false; }
+  if (!agree.checked) { alert('Please agree to the Terms and Privacy Policy'); ok = false; }
+  if (!ok) return;
+  const btn = document.getElementById('regBtn');
+  btn.disabled = true;
+  btn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="animation:spin-slow .8s linear infinite"><path d="M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0z" opacity=".25"/><path d="M21 12a9 9 0 0 1-9 9" stroke-linecap="round"/></svg> Creating account…';
+  setTimeout(() => showSuccess('register'), 800);
+});
+
+function showSuccess(type) {
+  document.getElementById('successTitle').textContent = type === 'register' ? 'Account created!' : 'Login successful!';
+  document.getElementById('successOverlay').classList.add('show');
+  setTimeout(() => { window.location.href = 'dashboard.html'; }, 1600);
+}
+
+function socialLogin(provider) {
+  const btn = event.currentTarget;
+  btn.disabled = true;
+  btn.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="animation:spin-slow .8s linear infinite"><path d="M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0z" opacity=".25"/><path d="M21 12a9 9 0 0 1-9 9" stroke-linecap="round"/></svg> Connecting…`;
+  setTimeout(() => showSuccess('login'), 1000);
+}
+
+function showForgot(e) {
+  e.preventDefault();
+  alert('Password reset link has been sent to your email.');
+}
+
+// ── Carousel ──
+let current = 0; let autoTimer;
+function goSlide(n) {
+  document.getElementById('slide'+current).classList.remove('active');
+  document.querySelectorAll('.c-dot')[current].classList.remove('active');
+  current = n;
+  document.getElementById('slide'+current).classList.add('active');
+  document.querySelectorAll('.c-dot')[current].classList.add('active');
+  clearInterval(autoTimer); autoTimer = setInterval(nextSlide, 3200);
+}
+function nextSlide() { goSlide((current+1)%4); }
+autoTimer = setInterval(nextSlide, 3200);
+
+// ── Ripple ──
+document.querySelectorAll('.btn, .social-btn').forEach(btn => {
+  btn.addEventListener('click', function(e) {
+    const r = document.createElement('span'); r.classList.add('ripple');
+    const rect = this.getBoundingClientRect(); const s = Math.max(rect.width, rect.height);
+    r.style.cssText = `width:${s}px;height:${s}px;left:${e.clientX-rect.left-s/2}px;top:${e.clientY-rect.top-s/2}px`;
+    this.appendChild(r); r.addEventListener('animationend', () => r.remove());
+  });
+});
+</script>
+</body>
+</html>
