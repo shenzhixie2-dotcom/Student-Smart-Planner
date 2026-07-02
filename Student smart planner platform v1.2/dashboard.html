@@ -1,0 +1,604 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Dashboard — Smart Planner</title>
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    /* ── Stat cards ── */
+    .stat-card {
+      cursor: default;
+      transition: transform .25s var(--ease-out), box-shadow .25s var(--ease-out);
+    }
+    .stat-card:hover { transform: translateY(-4px); box-shadow: 0 12px 40px rgba(27,58,107,.12); }
+
+    /* Icon container */
+    .stat-icon-wrap {
+      width: 44px; height: 44px; border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      transition: transform .3s cubic-bezier(.34,1.56,.64,1);
+      flex-shrink: 0;
+    }
+    .stat-card:hover .stat-icon-wrap { transform: scale(1.15) rotate(-5deg); }
+
+    /* Counter animation */
+    .stat-card-value { font-size: 2rem; font-weight: 800; color: var(--text); letter-spacing: -.04em; line-height: 1; margin: 8px 0 6px; }
+
+    /* ── Quick action cards ── */
+    .qa-card {
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      gap: 10px; padding: 20px 12px; border-radius: var(--r-lg);
+      background: var(--surface); border: 1.5px solid var(--border);
+      text-decoration: none; cursor: pointer; transition: all .25s var(--ease-out);
+      position: relative; overflow: hidden;
+    }
+    .qa-card::before {
+      content: ''; position: absolute; inset: 0;
+      background: var(--qa-color, var(--navy));
+      opacity: 0; transition: opacity .25s ease;
+    }
+    .qa-card:hover { border-color: transparent; transform: translateY(-3px); box-shadow: 0 8px 28px var(--qa-shadow, rgba(27,58,107,.18)); }
+    .qa-card:hover::before { opacity: .06; }
+    .qa-card:active { transform: translateY(0); }
+
+    .qa-icon-wrap {
+      width: 48px; height: 48px; border-radius: 14px;
+      display: flex; align-items: center; justify-content: center;
+      transition: transform .35s cubic-bezier(.34,1.56,.64,1);
+      position: relative; z-index: 1;
+    }
+    .qa-card:hover .qa-icon-wrap { transform: scale(1.2) rotate(-8deg); }
+    .qa-label { font-size: .875rem; font-weight: 700; color: var(--text); position: relative; z-index: 1; transition: color .2s; }
+    .qa-sublabel { font-size: .75rem; color: var(--text-muted); position: relative; z-index: 1; }
+
+    /* ── Schedule items ── */
+    .schedule-item {
+      display: flex; align-items: center; gap: 12px;
+      padding: 10px 12px; border-radius: 10px;
+      transition: background .2s ease; cursor: pointer;
+      margin-bottom: 4px;
+    }
+    .schedule-item:hover { background: var(--bg); }
+    .schedule-check {
+      width: 22px; height: 22px; border-radius: 50%;
+      border: 2px solid var(--border-dark); flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      transition: all .3s cubic-bezier(.34,1.56,.64,1); cursor: pointer;
+      position: relative;
+    }
+    .schedule-check.done {
+      background: var(--teal); border-color: var(--teal);
+    }
+    .schedule-check-svg {
+      width: 10px; height: 10px;
+      stroke: #fff; stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; fill: none;
+      stroke-dasharray: 14; stroke-dashoffset: 14;
+      transition: stroke-dashoffset .35s cubic-bezier(.16,1,.3,1);
+    }
+    .schedule-check.done .schedule-check-svg { stroke-dashoffset: 0; }
+    .schedule-time { font-size: .75rem; color: var(--text-muted); font-variant-numeric: tabular-nums; min-width: 40px; }
+    .schedule-task { font-size: .9rem; color: var(--text); flex: 1; transition: color .2s; }
+    .schedule-item.done .schedule-task { color: var(--text-light); text-decoration: line-through; }
+
+    /* ── Note items ── */
+    .note-item {
+      display: flex; align-items: center; gap: 12px;
+      padding: 10px 12px; border-radius: 10px;
+      cursor: pointer; transition: all .2s ease;
+    }
+    .note-item:hover { background: var(--bg); transform: translateX(4px); }
+    .note-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+    .note-info { flex: 1; min-width: 0; }
+    .note-title { font-size: .875rem; font-weight: 600; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .note-date { font-size: .75rem; color: var(--text-muted); margin-top: 2px; }
+    .note-arrow { color: var(--text-light); font-size: 1.1rem; transition: transform .2s; }
+    .note-item:hover .note-arrow { transform: translateX(3px); color: var(--navy); }
+
+    /* ── Donut tooltip ── */
+    .donut-chart { position: relative; display: flex; justify-content: center; }
+    .donut-center { position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); text-align: center; pointer-events: none; }
+    .donut-center-pct { font-size: 1.75rem; font-weight: 800; color: var(--text); letter-spacing: -.04em; line-height: 1; }
+    .donut-center-label { font-size: .7rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: .05em; margin-top: 2px; }
+
+    /* Donut segments hover */
+    .donut-fill { cursor: pointer; transition: opacity .2s; }
+    .donut-fill:hover { opacity: .85; }
+
+    /* ── Progress ring on stat cards ── */
+    @keyframes ring-fill { from { stroke-dashoffset: 88; } }
+
+    /* ── Pulse dot for "live" indicator ── */
+    .pulse-dot { width: 8px; height: 8px; border-radius: 50%; background: #22C55E; position: relative; }
+    .pulse-dot::after {
+      content: ''; position: absolute; inset: -4px;
+      border-radius: 50%; background: rgba(34,197,94,.3);
+      animation: pulse-ring 1.8s ease infinite;
+    }
+    @keyframes pulse-ring { 0%,100% { transform: scale(1); opacity:.6; } 50% { transform: scale(1.6); opacity:0; } }
+
+    /* ── Deadline badge ── */
+    .deadline-badge {
+      display: inline-flex; align-items: center; gap: 5px;
+      font-size: .75rem; font-weight: 700; padding: 3px 10px;
+      border-radius: 999px;
+    }
+  </style>
+</head>
+<body>
+<div class="app-layout">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <a href="index.html" class="sidebar-logo">
+        <svg width="32" height="32" viewBox="0 0 36 36" fill="none" style="flex-shrink:0"><defs><linearGradient id="lgS" x1="0" y1="0" x2="36" y2="36" gradientUnits="userSpaceOnUse"><stop offset="0%" stop-color="#0F2449"/><stop offset="100%" stop-color="#3B6ED4"/></linearGradient></defs><rect width="36" height="36" rx="9" fill="url(#lgS)"/><rect x="9" y="11" width="14" height="2.5" rx="1.25" fill="white" opacity="0.95"/><rect x="9" y="16.5" width="10" height="2" rx="1" fill="white" opacity="0.7"/><rect x="9" y="21.5" width="7" height="2" rx="1" fill="white" opacity="0.5"/><circle cx="25.5" cy="24.5" r="6" fill="#4E9E9A"/><path d="M22.5 24.5l2 2 4-4" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Smart<span style="color:var(--teal)">Planner</span>
+      </a>
+    </div>
+
+    <nav class="sidebar-nav">
+      <div class="sidebar-section-title">Main</div>
+      <a href="dashboard.html" class="sidebar-link active">
+        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/></svg>
+        Dashboard
+      </a>
+      <a href="assignments.html" class="sidebar-link">
+        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+        Assignments
+        <span class="sidebar-badge">4</span>
+      </a>
+      <a href="notes.html" class="sidebar-link">
+        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M16 13H8M16 17H8M10 9H8"/></svg>
+        Notes
+      </a>
+      <a href="document-editor.html" class="sidebar-link">
+        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+        Document Editor
+      </a>
+      <div class="sidebar-section-title" style="margin-top:var(--sp-3)">Collaboration</div>
+      <a href="group.html" class="sidebar-link">
+        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        Group
+      </a>
+      <div class="sidebar-section-title" style="margin-top:var(--sp-3)">Account</div>
+      <a href="#" class="sidebar-link">
+        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+        Notifications
+        <span class="sidebar-badge">3</span>
+      </a>
+      <a href="settings.html" class="sidebar-link">
+        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+        Settings
+      </a>
+    </nav>
+
+    <div class="sidebar-footer">
+      <div class="sidebar-user">
+        <div class="avatar">XS</div>
+        <div class="sidebar-user-info">
+          <div class="sidebar-user-name">Xie Shenzhi</div>
+          <div class="sidebar-user-role">Computer Science</div>
+        </div>
+        <svg width="16" height="16" fill="none" stroke="var(--text-light)" stroke-width="2" viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg>
+      </div>
+    </div>
+  </aside>
+
+  <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+  <!-- MAIN -->
+  <main class="main-content">
+    <div class="mobile-topbar">
+      <button class="hamburger-btn" id="menuBtn"><span></span><span></span><span></span></button>
+      <a href="index.html" class="sidebar-logo"><svg width="32" height="32" viewBox="0 0 36 36" fill="none" style="flex-shrink:0"><defs><linearGradient id="lgSm" x1="0" y1="0" x2="36" y2="36" gradientUnits="userSpaceOnUse"><stop offset="0%" stop-color="#0F2449"/><stop offset="100%" stop-color="#3B6ED4"/></linearGradient></defs><rect width="36" height="36" rx="9" fill="url(#lgSm)"/><rect x="9" y="11" width="14" height="2.5" rx="1.25" fill="white" opacity="0.95"/><rect x="9" y="16.5" width="10" height="2" rx="1" fill="white" opacity="0.7"/><rect x="9" y="21.5" width="7" height="2" rx="1" fill="white" opacity="0.5"/><circle cx="25.5" cy="24.5" r="6" fill="#4E9E9A"/><path d="M22.5 24.5l2 2 4-4" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>Smart<span style="color:var(--teal)">Planner</span></a>
+      <div class="notif-btn"><svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg><div class="notif-dot"></div></div>
+    </div>
+
+    <div class="page-header">
+      <div>
+        <div class="page-title">Dashboard</div>
+        <div class="page-subtitle" id="greetingLine">Good morning, Xie Shenzhi 👋</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:var(--sp-3)">
+        <div class="search-bar">
+          <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+          <input type="text" placeholder="Search anything…">
+        </div>
+        <div class="notif-btn"><svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg><div class="notif-dot"></div></div>
+        <a href="login.html" class="btn btn-secondary btn-sm">Logout</a>
+      </div>
+    </div>
+
+    <div class="page-body">
+
+      <!-- STATS -->
+      <div class="stats-grid">
+
+        <!-- Tasks Today -->
+        <div class="stat-card reveal" onclick="location.href='assignments.html'" style="cursor:pointer">
+          <div class="stat-card-header">
+            <div class="stat-card-label">Tasks Today</div>
+            <div class="stat-icon-wrap" style="background:rgba(59,110,212,.12)">
+              <svg width="22" height="22" fill="none" stroke="#3B6ED4" stroke-width="2" viewBox="0 0 24 24">
+                <path d="M9 11l3 3L22 4"/>
+                <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
+              </svg>
+            </div>
+          </div>
+          <div class="stat-card-value" data-count="4">0</div>
+          <div class="stat-card-change" style="display:flex;align-items:center;gap:5px">
+            <svg width="12" height="12" fill="none" stroke="#22C55E" stroke-width="2.5" viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+            <span>2 more than yesterday</span>
+          </div>
+        </div>
+
+        <!-- Deadlines -->
+        <div class="stat-card reveal delay-1" onclick="location.href='assignments.html'" style="cursor:pointer">
+          <div class="stat-card-header">
+            <div class="stat-card-label">Upcoming Deadlines</div>
+            <div class="stat-icon-wrap" style="background:rgba(245,158,11,.12)">
+              <svg width="22" height="22" fill="none" stroke="#F59E0B" stroke-width="2" viewBox="0 0 24 24">
+                <circle cx="12" cy="12" r="10"/>
+                <path d="M12 6v6l4 2"/>
+              </svg>
+            </div>
+          </div>
+          <div class="stat-card-value" data-count="2">0</div>
+          <div class="stat-card-change" style="display:flex;align-items:center;gap:5px;color:var(--amber)">
+            <svg width="12" height="12" fill="#F59E0B" viewBox="0 0 24 24"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13" stroke="#fff" stroke-width="2"/><line x1="12" y1="17" x2="12.01" y2="17" stroke="#fff" stroke-width="2"/></svg>
+            <span>Due this week</span>
+          </div>
+        </div>
+
+        <!-- Study Hours -->
+        <div class="stat-card reveal delay-2">
+          <div class="stat-card-header">
+            <div class="stat-card-label">Study Hours This Week</div>
+            <div class="stat-icon-wrap" style="background:rgba(78,158,154,.12)">
+              <svg width="22" height="22" fill="none" stroke="#4E9E9A" stroke-width="2" viewBox="0 0 24 24">
+                <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/>
+                <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>
+              </svg>
+            </div>
+          </div>
+          <div class="stat-card-value" data-count="6">0</div>
+          <div class="stat-card-change" style="display:flex;align-items:center;gap:5px;color:var(--teal)">
+            <svg width="12" height="12" fill="none" stroke="#4E9E9A" stroke-width="2.5" viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+            <span>On track</span>
+          </div>
+        </div>
+
+        <!-- Completed Tasks -->
+        <div class="stat-card reveal delay-3">
+          <div class="stat-card-header">
+            <div class="stat-card-label">Completed Tasks</div>
+            <div class="stat-icon-wrap" style="background:rgba(34,197,94,.12)">
+              <svg width="22" height="22" fill="none" stroke="#22C55E" stroke-width="2" viewBox="0 0 24 24">
+                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                <path d="M22 4L12 14.01l-3-3"/>
+              </svg>
+            </div>
+          </div>
+          <div class="stat-card-value" data-count="12">0</div>
+          <div class="stat-card-change" style="display:flex;align-items:center;gap:5px">
+            <svg width="12" height="12" fill="none" stroke="#22C55E" stroke-width="2.5" viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+            <span>3 this week</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- MAIN GRID -->
+      <div class="dashboard-grid">
+
+        <!-- Donut chart -->
+        <div class="card reveal">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
+            <div class="h4">Assignment Progress</div>
+            <span class="deadline-badge" style="background:rgba(78,158,154,.12);color:var(--teal)">
+              <div class="pulse-dot"></div> Live
+            </span>
+          </div>
+          <p class="xs text-muted" style="margin-bottom:var(--sp-3)">Current semester overview</p>
+          <div class="donut-chart">
+            <svg viewBox="0 0 160 160" width="160" height="160">
+              <defs>
+                <linearGradient id="donutGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stop-color="#1B3A6B"/>
+                  <stop offset="100%" stop-color="#3B6ED4"/>
+                </linearGradient>
+                <linearGradient id="donutGrad2" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stop-color="#4E9E9A"/>
+                  <stop offset="100%" stop-color="#22C55E"/>
+                </linearGradient>
+              </defs>
+              <circle cx="80" cy="80" r="64" fill="none" stroke="var(--bg)" stroke-width="18"/>
+              <!-- Remaining ring (teal) -->
+              <circle class="donut-fill" cx="80" cy="80" r="64" fill="none"
+                stroke="url(#donutGrad2)" stroke-width="18" stroke-linecap="round"
+                stroke-dasharray="402.1 402.1" stroke-dashoffset="0"
+                transform="rotate(-90 80 80)" id="donutRemain"
+                title="Remaining: 30%"/>
+              <!-- Completed ring (navy→blue) -->
+              <circle class="donut-fill" cx="80" cy="80" r="64" fill="none"
+                stroke="url(#donutGrad)" stroke-width="18" stroke-linecap="round"
+                stroke-dasharray="402.1 402.1" stroke-dashoffset="402.1"
+                transform="rotate(-90 80 80)" id="donutCircle"
+                title="Completed: 70%"/>
+            </svg>
+            <div class="donut-center">
+              <div class="donut-center-pct" id="donutPct">0%</div>
+              <div class="donut-center-label">Completed</div>
+            </div>
+          </div>
+          <div style="display:flex;justify-content:center;gap:var(--sp-5);margin-top:var(--sp-3)">
+            <div style="display:flex;align-items:center;gap:6px">
+              <div style="width:10px;height:10px;background:linear-gradient(135deg,var(--navy),var(--blue));border-radius:50%"></div>
+              <span class="xs">Completed (70%)</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:6px">
+              <div style="width:10px;height:10px;background:linear-gradient(135deg,var(--teal),#22C55E);border-radius:50%"></div>
+              <span class="xs text-muted">Remaining (30%)</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Schedule -->
+        <div class="card reveal delay-1">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:var(--sp-3)">
+            <div class="h4">Today's Schedule</div>
+            <a href="assignments.html" class="btn btn-secondary btn-sm">View All</a>
+          </div>
+
+          <div class="schedule-item" onclick="toggleCheck(this)">
+            <div class="schedule-check done">
+              <svg class="schedule-check-svg" viewBox="0 0 12 12"><path d="M2 6l3 3 5-5"/></svg>
+            </div>
+            <div class="schedule-time">09:00</div>
+            <div class="schedule-task">Mathematics study</div>
+          </div>
+          <div class="schedule-item" onclick="toggleCheck(this)">
+            <div class="schedule-check done">
+              <svg class="schedule-check-svg" viewBox="0 0 12 12"><path d="M2 6l3 3 5-5"/></svg>
+            </div>
+            <div class="schedule-time">10:30</div>
+            <div class="schedule-task">Read the case study</div>
+          </div>
+          <div class="schedule-item" onclick="toggleCheck(this)">
+            <div class="schedule-check">
+              <svg class="schedule-check-svg" viewBox="0 0 12 12"><path d="M2 6l3 3 5-5"/></svg>
+            </div>
+            <div class="schedule-time">13:00</div>
+            <div class="schedule-task">Group assignment meeting</div>
+          </div>
+          <div class="schedule-item" onclick="toggleCheck(this)">
+            <div class="schedule-check">
+              <svg class="schedule-check-svg" viewBox="0 0 12 12"><path d="M2 6l3 3 5-5"/></svg>
+            </div>
+            <div class="schedule-time">15:30</div>
+            <div class="schedule-task">Lecture notes — Web Dev</div>
+          </div>
+          <div class="schedule-item" onclick="toggleCheck(this)">
+            <div class="schedule-check">
+              <svg class="schedule-check-svg" viewBox="0 0 12 12"><path d="M2 6l3 3 5-5"/></svg>
+            </div>
+            <div class="schedule-time">18:00</div>
+            <div class="schedule-task">Group project presentation prep</div>
+          </div>
+        </div>
+
+        <!-- Mini Calendar -->
+        <div class="card reveal delay-2">
+          <div class="mini-cal">
+            <div class="mini-cal-header">
+              <button class="mini-cal-nav" onclick="changeMonth(-1)">‹</button>
+              <div class="mini-cal-title" id="calTitle">June 2026</div>
+              <button class="mini-cal-nav" onclick="changeMonth(1)">›</button>
+            </div>
+            <div class="cal-grid" id="calGrid"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- NOTES + QUICK ACTIONS -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--sp-5)">
+
+        <div class="card reveal">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:var(--sp-4)">
+            <div class="h4">Recent Notes</div>
+            <a href="notes.html" class="btn btn-secondary btn-sm">All Notes</a>
+          </div>
+          <div class="note-item" onclick="location.href='notes.html'">
+            <div class="note-dot" style="background:var(--navy)"></div>
+            <div class="note-info">
+              <div class="note-title">Web Development — Chapter 3 Summary</div>
+              <div class="note-date">July 1</div>
+            </div>
+            <div class="note-arrow">›</div>
+          </div>
+          <div class="note-item" onclick="location.href='notes.html'">
+            <div class="note-dot" style="background:var(--teal)"></div>
+            <div class="note-info">
+              <div class="note-title">Mathematics — Integration Formula Sheet</div>
+              <div class="note-date">Jun 30</div>
+            </div>
+            <div class="note-arrow">›</div>
+          </div>
+          <div class="note-item" onclick="location.href='notes.html'">
+            <div class="note-dot" style="background:var(--amber)"></div>
+            <div class="note-info">
+              <div class="note-title">Computer Science — Database Design Notes</div>
+              <div class="note-date">Jun 29</div>
+            </div>
+            <div class="note-arrow">›</div>
+          </div>
+        </div>
+
+        <div class="card reveal delay-1">
+          <div class="h4" style="margin-bottom:var(--sp-4)">Quick Actions</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--sp-3)">
+
+            <a href="notes.html" class="qa-card" style="--qa-color:#3B6ED4;--qa-shadow:rgba(59,110,212,.2)">
+              <div class="qa-icon-wrap" style="background:rgba(59,110,212,.12)">
+                <svg width="24" height="24" fill="none" stroke="#3B6ED4" stroke-width="2" viewBox="0 0 24 24">
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                  <path d="M14 2v6h6M12 18v-4M10 16h4"/>
+                </svg>
+              </div>
+              <div class="qa-label">New Note</div>
+              <div class="qa-sublabel">Start writing</div>
+            </a>
+
+            <a href="assignments.html" class="qa-card" style="--qa-color:#F59E0B;--qa-shadow:rgba(245,158,11,.2)">
+              <div class="qa-icon-wrap" style="background:rgba(245,158,11,.12)">
+                <svg width="24" height="24" fill="none" stroke="#F59E0B" stroke-width="2" viewBox="0 0 24 24">
+                  <rect x="3" y="4" width="18" height="18" rx="2"/>
+                  <path d="M16 2v4M8 2v4M3 10h18M8 14h.01M12 14h.01M16 14h.01M8 18h.01M12 18h.01"/>
+                </svg>
+              </div>
+              <div class="qa-label">Add Task</div>
+              <div class="qa-sublabel">Track deadline</div>
+            </a>
+
+            <a href="document-editor.html" class="qa-card" style="--qa-color:#4E9E9A;--qa-shadow:rgba(78,158,154,.2)">
+              <div class="qa-icon-wrap" style="background:rgba(78,158,154,.12)">
+                <svg width="24" height="24" fill="none" stroke="#4E9E9A" stroke-width="2" viewBox="0 0 24 24">
+                  <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                  <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                </svg>
+              </div>
+              <div class="qa-label">New Doc</div>
+              <div class="qa-sublabel">Rich text editor</div>
+            </a>
+
+            <a href="group.html" class="qa-card" style="--qa-color:#7c3aed;--qa-shadow:rgba(124,58,237,.2)">
+              <div class="qa-icon-wrap" style="background:rgba(124,58,237,.1)">
+                <svg width="24" height="24" fill="none" stroke="#7c3aed" stroke-width="2" viewBox="0 0 24 24">
+                  <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                  <circle cx="9" cy="7" r="4"/>
+                  <path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/>
+                </svg>
+              </div>
+              <div class="qa-label">Join Group</div>
+              <div class="qa-sublabel">Collaborate</div>
+            </a>
+
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script>
+// ── Sidebar toggle ──
+const menuBtn = document.getElementById('menuBtn');
+const sidebar = document.getElementById('sidebar');
+const overlay = document.getElementById('sidebarOverlay');
+menuBtn.addEventListener('click', () => { sidebar.classList.toggle('open'); overlay.classList.toggle('show'); });
+overlay.addEventListener('click', () => { sidebar.classList.remove('open'); overlay.classList.remove('show'); });
+
+// ── Greeting ──
+(function(){
+  const h = new Date().getHours();
+  const greet = h < 12 ? 'Good morning' : h < 18 ? 'Good afternoon' : 'Good evening';
+  const now = new Date();
+  const ds = now.toLocaleDateString('en-GB',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+  document.getElementById('greetingLine').textContent = `${ds} — ${greet}, Xie Shenzhi 👋`;
+})();
+
+// ── Scroll reveal ──
+const obs = new IntersectionObserver(entries => {
+  entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); obs.unobserve(e.target); } });
+}, { threshold: 0.08 });
+document.querySelectorAll('.reveal').forEach(el => obs.observe(el));
+
+// ── Animated counter ──
+function animateCount(el, target, duration) {
+  let start = 0; const step = target / (duration / 16);
+  const tick = () => { start = Math.min(start + step, target); el.textContent = Math.round(start); if (start < target) requestAnimationFrame(tick); };
+  requestAnimationFrame(tick);
+}
+const countObs = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      const target = +e.target.dataset.count;
+      animateCount(e.target, target, 800);
+      countObs.unobserve(e.target);
+    }
+  });
+}, { threshold: 0.5 });
+document.querySelectorAll('[data-count]').forEach(el => countObs.observe(el));
+
+// ── Donut animation ──
+function animateDonut() {
+  const circle = document.getElementById('donutCircle');
+  const pctEl  = document.getElementById('donutPct');
+  const circumference = 2 * Math.PI * 64; // 402.12
+  const pct = 0.70;
+  const target = circumference * (1 - pct);
+  circle.style.transition = 'none';
+  circle.style.strokeDashoffset = circumference;
+  requestAnimationFrame(() => {
+    circle.style.transition = 'stroke-dashoffset 1.6s cubic-bezier(.16,1,.3,1)';
+    circle.style.strokeDashoffset = target;
+  });
+  let n = 0;
+  const inc = () => { n = Math.min(n + 1, 70); pctEl.textContent = n + '%'; if (n < 70) setTimeout(inc, 22); };
+  setTimeout(inc, 200);
+}
+const donutCard = document.querySelector('.donut-chart').closest('.card');
+const donutObs = new IntersectionObserver(entries => {
+  if (entries[0].isIntersecting) { animateDonut(); donutObs.disconnect(); }
+}, { threshold: 0.3 });
+donutObs.observe(donutCard);
+
+// ── Schedule toggle with animated checkmark ──
+function toggleCheck(item) {
+  const chk = item.querySelector('.schedule-check');
+  chk.classList.toggle('done');
+  item.classList.toggle('done');
+}
+
+// ── Mini calendar ──
+let currentDate = new Date(2026, 6, 1); // July 2026
+const events = [3, 8, 10, 15, 17, 22, 28];
+
+function renderCalendar() {
+  const months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+  document.getElementById('calTitle').textContent = months[currentDate.getMonth()] + ' ' + currentDate.getFullYear();
+  const grid = document.getElementById('calGrid');
+  grid.innerHTML = '';
+  ['Su','Mo','Tu','We','Th','Fr','Sa'].forEach(d => {
+    const el = document.createElement('div');
+    el.className = 'cal-day-name'; el.textContent = d;
+    grid.appendChild(el);
+  });
+  const first = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1).getDay();
+  const days = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0).getDate();
+  const today = new Date();
+  for (let i = 0; i < first; i++) { const el = document.createElement('div'); el.className = 'cal-day empty'; grid.appendChild(el); }
+  for (let d = 1; d <= days; d++) {
+    const el = document.createElement('div'); el.className = 'cal-day';
+    if (d === today.getDate() && currentDate.getMonth() === today.getMonth() && currentDate.getFullYear() === today.getFullYear()) el.classList.add('today');
+    if (events.includes(d)) el.classList.add('has-event');
+    el.textContent = d;
+    el.addEventListener('click', () => { document.querySelectorAll('.cal-day.selected').forEach(x => x.classList.remove('selected')); el.classList.add('selected'); });
+    grid.appendChild(el);
+  }
+}
+function changeMonth(dir) { currentDate.setMonth(currentDate.getMonth() + dir); renderCalendar(); }
+renderCalendar();
+
+// ── Ripple on quick action cards ──
+document.querySelectorAll('.qa-card, .btn').forEach(btn => {
+  btn.addEventListener('click', function(e) {
+    const r = document.createElement('span'); r.classList.add('ripple');
+    const rect = this.getBoundingClientRect(); const s = Math.max(rect.width, rect.height);
+    r.style.cssText = `width:${s}px;height:${s}px;left:${e.clientX-rect.left-s/2}px;top:${e.clientY-rect.top-s/2}px`;
+    this.appendChild(r); r.addEventListener('animationend', () => r.remove());
+  });
+});
+</script>
+</body>
+</html>

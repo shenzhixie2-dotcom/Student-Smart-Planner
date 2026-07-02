@@ -1,0 +1,283 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Notes — Smart Planner</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div class="app-layout">
+
+  <!-- SIDEBAR (shared) -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <a href="index.html" class="sidebar-logo">
+        <svg width="32" height="32" viewBox="0 0 36 36" fill="none" style="flex-shrink:0"><rect width="36" height="36" rx="9" fill="url(#lgN)"/><defs><linearGradient id="lgN" x1="0" y1="0" x2="36" y2="36" gradientUnits="userSpaceOnUse"><stop offset="0%" stop-color="#0F2449"/><stop offset="100%" stop-color="#3B6ED4"/></linearGradient></defs><rect x="9" y="11" width="14" height="2.5" rx="1.25" fill="white" opacity="0.95"/><rect x="9" y="16.5" width="10" height="2" rx="1" fill="white" opacity="0.7"/><rect x="9" y="21.5" width="7" height="2" rx="1" fill="white" opacity="0.5"/><circle cx="25.5" cy="24.5" r="6" fill="#4E9E9A"/><path d="M22.5 24.5l2 2 4-4" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Smart<span style="color:var(--teal)">Planner</span>
+      </a>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="sidebar-section-title">Main</div>
+      <a href="dashboard.html" class="sidebar-link">
+        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/></svg>
+        Dashboard
+      </a>
+      <a href="assignments.html" class="sidebar-link">
+        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+        Assignments
+      </a>
+      <a href="notes.html" class="sidebar-link active">
+        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M16 13H8M16 17H8M10 9H8"/></svg>
+        Notes
+      </a>
+      <a href="document-editor.html" class="sidebar-link">
+        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+        Document Editor
+      </a>
+      <div class="sidebar-section-title" style="margin-top:var(--sp-3)">Collaboration</div>
+      <a href="group.html" class="sidebar-link">
+        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        Group
+      </a>
+      <div class="sidebar-section-title" style="margin-top:var(--sp-3)">Account</div>
+      <a href="settings.html" class="sidebar-link">
+        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+        Settings
+      </a>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="sidebar-user">
+        <div class="avatar">XS</div>
+        <div class="sidebar-user-info">
+          <div class="sidebar-user-name">Xie Shenzhi</div>
+          <div class="sidebar-user-role">Computer Science</div>
+        </div>
+      </div>
+    </div>
+  </aside>
+  <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+  <main class="main-content">
+    <div class="mobile-topbar">
+      <button class="hamburger-btn" id="menuBtn"><span></span><span></span><span></span></button>
+      <a href="index.html" class="sidebar-logo"><svg width="32" height="32" viewBox="0 0 36 36" fill="none" style="flex-shrink:0"><rect width="36" height="36" rx="9" fill="url(#lgN)"/><defs><linearGradient id="lgN" x1="0" y1="0" x2="36" y2="36" gradientUnits="userSpaceOnUse"><stop offset="0%" stop-color="#0F2449"/><stop offset="100%" stop-color="#3B6ED4"/></linearGradient></defs><rect x="9" y="11" width="14" height="2.5" rx="1.25" fill="white" opacity="0.95"/><rect x="9" y="16.5" width="10" height="2" rx="1" fill="white" opacity="0.7"/><rect x="9" y="21.5" width="7" height="2" rx="1" fill="white" opacity="0.5"/><circle cx="25.5" cy="24.5" r="6" fill="#4E9E9A"/><path d="M22.5 24.5l2 2 4-4" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>Smart<span style="color:var(--teal)">Planner</span></a>
+      <div></div>
+    </div>
+
+    <div class="page-header">
+      <div>
+        <div class="page-title">Notes</div>
+        <div class="page-subtitle">All your study notes in one organized space</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:var(--sp-3)">
+        <div class="search-bar">
+          <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+          <input type="text" placeholder="Search notes…" id="noteSearch">
+        </div>
+        <button class="btn btn-primary btn-sm" onclick="openModal()">
+          <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
+          New Note
+        </button>
+      </div>
+    </div>
+
+    <div class="page-body">
+      <!-- Filter tabs -->
+      <div style="display:flex;gap:var(--sp-2);margin-bottom:var(--sp-6);flex-wrap:wrap">
+        <button class="btn btn-primary btn-sm" onclick="filterNotes('all',this)">All Notes</button>
+        <button class="btn btn-secondary btn-sm" onclick="filterNotes('web',this)">Web Dev</button>
+        <button class="btn btn-secondary btn-sm" onclick="filterNotes('math',this)">Mathematics</button>
+        <button class="btn btn-secondary btn-sm" onclick="filterNotes('group',this)">Group Work</button>
+        <button class="btn btn-secondary btn-sm" onclick="filterNotes('bio',this)">Biology</button>
+      </div>
+
+      <!-- Notes grid -->
+      <div class="notes-grid" id="notesGrid">
+        <div class="note-card blue reveal" data-category="web">
+          <div class="note-card-title">Web Dev — Chapter 3</div>
+          <div class="note-card-preview">HTML5 semantic tags, CSS Flexbox & Grid layout, JavaScript DOM manipulation, Responsive design, Media queries, Box model, Forms & Validation</div>
+          <div class="note-card-footer">
+            <span class="note-card-date">June 30, 2026</span>
+            <div class="note-card-actions">
+              <button class="note-action-btn" onclick="editNote(this)" title="Edit">✏️</button>
+              <button class="note-action-btn" title="Pin">📌</button>
+              <button class="note-action-btn" title="Delete">🗑</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="note-card teal reveal delay-1" data-category="math">
+          <div class="note-card-title">Mathematics — Calculus</div>
+          <div class="note-card-preview">Differentiation: chain rule, product rule, Integration by parts, Substitution method, Limits & continuity, Taylor series expansion</div>
+          <div class="note-card-footer">
+            <span class="note-card-date">June 29, 2026</span>
+            <div class="note-card-actions">
+              <button class="note-action-btn">✏️</button>
+              <button class="note-action-btn">📌</button>
+              <button class="note-action-btn">🗑</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="note-card amber reveal delay-2" data-category="group">
+          <div class="note-card-title">Group Project Planning</div>
+          <div class="note-card-preview">Task allocation, deadlines, meeting schedule. Mora: sitemap, Shenzhi: wireframes. Week 1: research, Week 2: implementation, Week 3: testing.</div>
+          <div class="note-card-footer">
+            <span class="note-card-date">June 28, 2026</span>
+            <div class="note-card-actions">
+              <button class="note-action-btn">✏️</button>
+              <button class="note-action-btn">📌</button>
+              <button class="note-action-btn">🗑</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="note-card green reveal delay-3" data-category="bio">
+          <div class="note-card-title">Exam Revision — Biology</div>
+          <div class="note-card-preview">Cell structure: nucleus, mitochondria, ribosomes DNA replication: helicase, polymerase. Photosynthesis: light reaction, Calvin cycle. Osmosis & diffusion, Enzyme activity.</div>
+          <div class="note-card-footer">
+            <span class="note-card-date">June 27, 2026</span>
+            <div class="note-card-actions">
+              <button class="note-action-btn">✏️</button>
+              <button class="note-action-btn">📌</button>
+              <button class="note-action-btn">🗑</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="note-card blue reveal" data-category="web">
+          <div class="note-card-title">CSS Grid & Flexbox</div>
+          <div class="note-card-preview">Grid: grid-template-columns, grid-template-rows, gap, grid-area. Flexbox: flex-direction, justify-content, align-items, flex-wrap. Responsive layouts with media queries.</div>
+          <div class="note-card-footer">
+            <span class="note-card-date">June 26, 2026</span>
+            <div class="note-card-actions">
+              <button class="note-action-btn">✏️</button>
+              <button class="note-action-btn">📌</button>
+              <button class="note-action-btn">🗑</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="note-card teal reveal delay-1" data-category="math">
+          <div class="note-card-title">Statistics & Probability</div>
+          <div class="note-card-preview">Mean, median, mode. Standard deviation, variance. Normal distribution, z-scores. Probability rules: addition, multiplication. Bayes' theorem examples.</div>
+          <div class="note-card-footer">
+            <span class="note-card-date">June 25, 2026</span>
+            <div class="note-card-actions">
+              <button class="note-action-btn">✏️</button>
+              <button class="note-action-btn">📌</button>
+              <button class="note-action-btn">🗑</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- New Note Modal -->
+<div id="noteModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:1000;align-items:center;justify-content:center;backdrop-filter:blur(4px)">
+  <div style="background:var(--surface);border-radius:var(--r-xl);padding:var(--sp-8);width:100%;max-width:520px;box-shadow:var(--shadow-xl);animation:heroFadeUp .3s var(--ease-out) both">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:var(--sp-6)">
+      <h3 style="font-size:1.25rem;font-weight:700">New Note</h3>
+      <button onclick="closeModal()" style="color:var(--text-muted);font-size:1.25rem;padding:var(--sp-1)">✕</button>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Title</label>
+      <input type="text" class="form-control" placeholder="Note title…" id="newNoteTitle">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Category</label>
+      <select class="form-control" id="newNoteCategory">
+        <option>Web Development</option>
+        <option>Mathematics</option>
+        <option>Group Work</option>
+        <option>Biology</option>
+        <option>Other</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Content</label>
+      <textarea class="form-control" rows="5" placeholder="Start writing your note…" id="newNoteContent" style="resize:vertical"></textarea>
+    </div>
+    <div style="display:flex;gap:var(--sp-3);justify-content:flex-end">
+      <button onclick="closeModal()" class="btn btn-secondary">Cancel</button>
+      <button onclick="saveNote()" class="btn btn-primary">Save Note</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// Sidebar
+const menuBtn = document.getElementById('menuBtn');
+const sidebar = document.getElementById('sidebar');
+const overlay = document.getElementById('sidebarOverlay');
+menuBtn.addEventListener('click', () => { sidebar.classList.toggle('open'); overlay.classList.toggle('show'); });
+overlay.addEventListener('click', () => { sidebar.classList.remove('open'); overlay.classList.remove('show'); });
+
+// Reveal
+const obs = new IntersectionObserver(entries => {
+  entries.forEach(e => { if(e.isIntersecting) { e.target.classList.add('visible'); obs.unobserve(e.target); }});
+}, { threshold: 0.05 });
+document.querySelectorAll('.reveal').forEach(el => obs.observe(el));
+
+// Modal
+function openModal() {
+  document.getElementById('noteModal').style.display = 'flex';
+}
+function closeModal() {
+  document.getElementById('noteModal').style.display = 'none';
+}
+
+// Save note
+function saveNote() {
+  const title = document.getElementById('newNoteTitle').value.trim();
+  const content = document.getElementById('newNoteContent').value.trim();
+  if (!title) return;
+  const colors = ['blue','teal','amber','green'];
+  const color = colors[Math.floor(Math.random() * colors.length)];
+  const card = document.createElement('div');
+  card.className = `note-card ${color} reveal visible`;
+  card.innerHTML = `
+    <div class="note-card-title">${title}</div>
+    <div class="note-card-preview">${content || 'No content yet…'}</div>
+    <div class="note-card-footer">
+      <span class="note-card-date">Just now</span>
+      <div class="note-card-actions">
+        <button class="note-action-btn">✏️</button>
+        <button class="note-action-btn">📌</button>
+        <button class="note-action-btn" onclick="this.closest('.note-card').remove()">🗑</button>
+      </div>
+    </div>`;
+  document.getElementById('notesGrid').prepend(card);
+  closeModal();
+  document.getElementById('newNoteTitle').value = '';
+  document.getElementById('newNoteContent').value = '';
+}
+
+// Filter
+function filterNotes(cat, btn) {
+  document.querySelectorAll('.note-card').forEach(c => {
+    c.style.display = (cat === 'all' || c.dataset.category === cat) ? '' : 'none';
+  });
+  document.querySelectorAll('.page-body .btn').forEach(b => b.classList.replace('btn-primary','btn-secondary'));
+  btn.classList.replace('btn-secondary','btn-primary');
+}
+
+// Search
+document.getElementById('noteSearch').addEventListener('input', function() {
+  const q = this.value.toLowerCase();
+  document.querySelectorAll('.note-card').forEach(c => {
+    const text = c.textContent.toLowerCase();
+    c.style.display = text.includes(q) ? '' : 'none';
+  });
+});
+
+// Delete note
+document.querySelectorAll('.note-action-btn').forEach((btn, i) => {
+  if (i % 3 === 2) btn.addEventListener('click', () => btn.closest('.note-card').remove());
+});
+</script>
+</body>
+</html>
