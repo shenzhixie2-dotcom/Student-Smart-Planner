@@ -1,0 +1,543 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Smart Planner — Your Academic Life, Beautifully Organized</title>
+  <meta name="description" content="Manage your schedule, assignments, notes, and group work in one elegant platform.">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="icon" href="favicon.ico" sizes="any">
+  <link rel="icon" href="icon.svg" type="image/svg+xml">
+  <style>
+    /* Mobile nav: hidden by default on ALL screen sizes; only open when .open */
+    #mobileNav { transform: translateX(-240px); box-shadow: var(--shadow-xl); }
+    #mobileNav.open { transform: translateX(0); }
+    /* Hide nav hamburger on desktop, show on mobile */
+    .nav-hamburger { display: none; }
+    @media (max-width: 768px) {
+      .nav-hamburger { display: flex; flex-direction: column; gap: 5px; padding: 6px; background: none; border: none; cursor: pointer; }
+      .nav-hamburger span { display: block; width: 22px; height: 2px; background: currentColor; border-radius: 2px; transition: all .3s; }
+      .nav-links, .nav-actions { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- PRELOADER -->
+<div id="preloader">
+  <div class="preloader-inner">
+    <div class="preloader-logo">Smart<span>Planner</span></div>
+    <div class="preloader-bar"></div>
+  </div>
+</div>
+
+<!-- NAVBAR -->
+<nav class="navbar navbar-light" id="navbar">
+  <div class="container">
+    <div class="navbar-inner">
+      <a href="index.html" class="nav-logo">
+        <svg width="34" height="34" viewBox="0 0 36 36" fill="none" style="flex-shrink:0">
+          <defs><linearGradient id="lg_nav" x1="0" y1="0" x2="36" y2="36" gradientUnits="userSpaceOnUse"><stop offset="0%" stop-color="#0F2449"/><stop offset="100%" stop-color="#3B6ED4"/></linearGradient></defs>
+          <rect width="36" height="36" rx="9" fill="url(#lg_nav)"/>
+          <rect x="9" y="11" width="14" height="2.5" rx="1.25" fill="white" opacity="0.95"/>
+          <rect x="9" y="16.5" width="10" height="2" rx="1" fill="white" opacity="0.7"/>
+          <rect x="9" y="21.5" width="7" height="2" rx="1" fill="white" opacity="0.5"/>
+          <circle cx="25.5" cy="24.5" r="6" fill="#4E9E9A"/>
+          <path d="M22.5 24.5l2 2 4-4" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        Smart<span>Planner</span>
+      </a>
+      <div class="nav-links">
+        <a href="index.html" class="nav-link active">Home</a>
+        <a href="dashboard.html" class="nav-link">Dashboard</a>
+        <a href="assignments.html" class="nav-link">Assignments</a>
+        <a href="notes.html" class="nav-link">Notes</a>
+        <a href="document-editor.html" class="nav-link">Editor</a>
+        <a href="group.html" class="nav-link">Group</a>
+      </div>
+      <div class="nav-actions">
+        <a href="login.html" class="btn btn-outline btn-sm">Login</a>
+        <a href="login.html" class="btn btn-teal btn-sm">Get Started</a>
+      </div>
+      <button class="nav-hamburger" id="navHamburger" aria-label="Menu">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </div>
+</nav>
+
+<!-- Mobile nav overlay -->
+<div class="sidebar-overlay" id="mobileNavOverlay"></div>
+<nav class="sidebar" id="mobileNav" style="background:var(--navy-dark);border-right:none;padding:var(--sp-5)">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:var(--sp-6)">
+    <span style="color:#fff;font-weight:800;font-size:1.05rem;letter-spacing:-.03em;display:flex;align-items:center;gap:8px">
+      <svg width="28" height="28" viewBox="0 0 36 36" fill="none"><rect width="36" height="36" rx="9" fill="#3B6ED4"/><rect x="9" y="11" width="14" height="2.5" rx="1.25" fill="white" opacity="0.95"/><rect x="9" y="16.5" width="10" height="2" rx="1" fill="white" opacity="0.7"/><rect x="9" y="21.5" width="7" height="2" rx="1" fill="white" opacity="0.5"/><circle cx="25.5" cy="24.5" r="6" fill="#4E9E9A"/><path d="M22.5 24.5l2 2 4-4" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      Smart<span style="color:var(--teal)">Planner</span>
+    </span>
+    <button id="closeNav" style="color:rgba(255,255,255,.6);font-size:1.25rem;padding:var(--sp-2)">✕</button>
+  </div>
+  <div style="display:flex;flex-direction:column;gap:4px">
+    <a href="index.html" style="color:#fff;padding:12px var(--sp-3);border-radius:var(--r-md);background:rgba(255,255,255,.1)">Home</a>
+    <a href="dashboard.html" style="color:rgba(255,255,255,.7);padding:12px var(--sp-3);border-radius:var(--r-md)">Dashboard</a>
+    <a href="assignments.html" style="color:rgba(255,255,255,.7);padding:12px var(--sp-3);border-radius:var(--r-md)">Assignments</a>
+    <a href="notes.html" style="color:rgba(255,255,255,.7);padding:12px var(--sp-3);border-radius:var(--r-md)">Notes</a>
+    <a href="document-editor.html" style="color:rgba(255,255,255,.7);padding:12px var(--sp-3);border-radius:var(--r-md)">Editor</a>
+    <a href="group.html" style="color:rgba(255,255,255,.7);padding:12px var(--sp-3);border-radius:var(--r-md)">Group</a>
+    <div style="margin-top:var(--sp-4);padding-top:var(--sp-4);border-top:1px solid rgba(255,255,255,.1)">
+      <a href="login.html" class="btn btn-teal" style="width:100%;justify-content:center">Get Started</a>
+    </div>
+  </div>
+</nav>
+
+<!-- ====================== HERO ====================== -->
+<section class="hero" id="hero">
+  <div class="hero-shapes">
+    <div class="shape shape-1"></div>
+    <div class="shape shape-2"></div>
+    <div class="shape shape-3"></div>
+    <div class="shape shape-4"></div>
+  </div>
+
+  <div class="hero-content">
+    <div class="hero-badge hero-anim-1">
+      <span class="hero-badge-dot"></span>
+      Student Productivity Platform
+    </div>
+
+    <h1 class="hero-title hero-anim-2">
+      Your Academic Life,<br>
+      <span class="highlight">Beautifully</span> Organized
+    </h1>
+
+    <p class="hero-desc hero-anim-3">
+      Manage your schedule, assignments, notes, and group work in one elegant platform.
+      Stop juggling apps — start achieving more.
+    </p>
+
+    <div class="hero-actions hero-anim-4">
+      <a href="login.html" class="btn btn-teal btn-lg">
+        Get Started Free
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+      </a>
+      <a href="dashboard.html" class="btn btn-outline btn-lg">View Dashboard</a>
+    </div>
+
+    <div class="hero-stats hero-anim-4">
+      <div class="hero-stat">
+        <div class="hero-stat-num" data-count="12000">0</div>
+        <div class="hero-stat-label">Active Students</div>
+      </div>
+      <div class="hero-stat-divider"></div>
+      <div class="hero-stat">
+        <div class="hero-stat-num" data-count="98">0</div>
+        <div class="hero-stat-label">Satisfaction Rate %</div>
+      </div>
+      <div class="hero-stat-divider"></div>
+      <div class="hero-stat">
+        <div class="hero-stat-num" data-count="7">0</div>
+        <div class="hero-stat-label">Core Features</div>
+      </div>
+      <div class="hero-stat-divider"></div>
+      <div class="hero-stat">
+        <div class="hero-stat-num" data-count="24">0</div>
+        <div class="hero-stat-label">7 Support</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="scroll-indicator">
+    <div class="scroll-indicator-line"></div>
+    <span>Scroll</span>
+  </div>
+</section>
+
+<!-- ====================== FEATURES ====================== -->
+<section class="section" id="features">
+  <div class="container">
+    <div class="text-center reveal">
+      <div class="section-label">Everything You Need</div>
+      <h2 class="h2 section-title">One Platform, Every Academic Tool</h2>
+      <p class="section-subtitle">Purpose-built features designed around the way students actually work.</p>
+    </div>
+
+    <div class="grid grid-4 gap-6" style="margin-top:var(--sp-12)">
+      <div class="feature-card reveal delay-1">
+        <div class="feature-icon feature-icon-blue">
+          <svg width="24" height="24" fill="none" stroke="var(--navy)" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/><path d="M8 14h.01M12 14h.01M16 14h.01M8 18h.01M12 18h.01"/></svg>
+        </div>
+        <h3 class="feature-title">Schedule Planner</h3>
+        <p class="feature-desc">Plan your daily, weekly, and monthly study sessions with an intuitive drag-and-drop calendar that adapts to your academic priorities.</p>
+        <a href="dashboard.html" class="feature-link">
+          Explore Planner
+          <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        </a>
+      </div>
+
+      <div class="feature-card reveal delay-2">
+        <div class="feature-icon feature-icon-teal">
+          <svg width="24" height="24" fill="none" stroke="var(--teal-dark)" stroke-width="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M16 13H8M16 17H8M10 9H8"/></svg>
+        </div>
+        <h3 class="feature-title">Smart Notes</h3>
+        <p class="feature-desc">Create, organize, and search your study notes effortlessly. Tag topics, add rich content, and access everything instantly when revision time comes.</p>
+        <a href="notes.html" class="feature-link">
+          Open Notes
+          <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        </a>
+      </div>
+
+      <div class="feature-card reveal delay-3">
+        <div class="feature-icon feature-icon-navy">
+          <svg width="24" height="24" fill="none" stroke="var(--navy)" stroke-width="2" viewBox="0 0 24 24"><circle cx="17" cy="7" r="3"/><circle cx="7" cy="17" r="3"/><circle cx="17" cy="17" r="3"/><path d="M7 7l10 10M17 10v4M14 17H10"/></svg>
+        </div>
+        <h3 class="feature-title">Group Collaboration</h3>
+        <p class="feature-desc">Communicate with teammates, track group progress, join video meetings, and co-edit documents — all in one shared workspace.</p>
+        <a href="group.html" class="feature-link">
+          View Groups
+          <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        </a>
+      </div>
+
+      <div class="feature-card reveal delay-4">
+        <div class="feature-icon feature-icon-amber">
+          <svg width="24" height="24" fill="none" stroke="var(--amber)" stroke-width="2" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+        </div>
+        <h3 class="feature-title">Document Editor</h3>
+        <p class="feature-desc">Write and edit your assignments directly in the platform with a rich text editor similar to Google Docs — no switching apps needed.</p>
+        <a href="document-editor.html" class="feature-link">
+          Open Editor
+          <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ====================== SECONDARY FEATURES ====================== -->
+<section class="section-sm" style="background:var(--surface); border-top:1px solid var(--border); border-bottom:1px solid var(--border)">
+  <div class="container">
+    <div class="grid grid-3 gap-8 items-center">
+      <div class="reveal reveal-left" style="grid-column:span 2">
+        <div class="section-label section-label-teal">Assignment Tracking</div>
+        <h2 class="h2 section-title" style="margin-top:var(--sp-4)">Never Miss a Deadline Again</h2>
+        <p style="color:var(--text-muted);line-height:1.7;margin-bottom:var(--sp-6)">
+          The Assignment Management system gives you a clear view of every task — what's due, what's in progress, and what's done. Visual progress bars and deadline timelines keep you ahead of the curve.
+        </p>
+        <div style="display:flex;flex-direction:column;gap:var(--sp-4);margin-bottom:var(--sp-6)">
+          <div style="display:flex;align-items:center;gap:var(--sp-3)">
+            <div style="width:36px;height:36px;background:var(--green-light);border-radius:var(--r-sm);display:flex;align-items:center;justify-content:center;flex-shrink:0">
+              <svg width="16" height="16" fill="none" stroke="var(--green)" stroke-width="2.5" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg>
+            </div>
+            <span style="font-size:.9375rem;color:var(--text)">Track multiple assignments across different subjects</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:var(--sp-3)">
+            <div style="width:36px;height:36px;background:var(--green-light);border-radius:var(--r-sm);display:flex;align-items:center;justify-content:center;flex-shrink:0">
+              <svg width="16" height="16" fill="none" stroke="var(--green)" stroke-width="2.5" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg>
+            </div>
+            <span style="font-size:.9375rem;color:var(--text)">Set status labels: In Progress, Pending, Completed</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:var(--sp-3)">
+            <div style="width:36px;height:36px;background:var(--green-light);border-radius:var(--r-sm);display:flex;align-items:center;justify-content:center;flex-shrink:0">
+              <svg width="16" height="16" fill="none" stroke="var(--green)" stroke-width="2.5" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg>
+            </div>
+            <span style="font-size:.9375rem;color:var(--text)">Visualize upcoming deadlines on a timeline</span>
+          </div>
+        </div>
+        <a href="assignments.html" class="btn btn-primary">View Assignments</a>
+      </div>
+
+      <!-- Mini dashboard preview -->
+      <div class="reveal reveal-right">
+        <div class="card" style="padding:var(--sp-5);box-shadow:var(--shadow-xl)">
+          <div style="font-size:.875rem;font-weight:700;color:var(--text);margin-bottom:var(--sp-4)">Assignment Overview</div>
+          <div style="display:flex;gap:var(--sp-3);margin-bottom:var(--sp-5)">
+            <div style="flex:1;background:var(--green-light);border-radius:var(--r-md);padding:var(--sp-3);text-align:center">
+              <div style="font-size:1.5rem;font-weight:800;color:#166534">12</div>
+              <div style="font-size:.7rem;color:#166534;font-weight:600;text-transform:uppercase;letter-spacing:.05em">Done</div>
+            </div>
+            <div style="flex:1;background:var(--blue-light);border-radius:var(--r-md);padding:var(--sp-3);text-align:center">
+              <div style="font-size:1.5rem;font-weight:800;color:var(--navy)">6</div>
+              <div style="font-size:.7rem;color:var(--navy);font-weight:600;text-transform:uppercase;letter-spacing:.05em">Active</div>
+            </div>
+            <div style="flex:1;background:var(--amber-light);border-radius:var(--r-md);padding:var(--sp-3);text-align:center">
+              <div style="font-size:1.5rem;font-weight:800;color:#92400e">4</div>
+              <div style="font-size:.7rem;color:#92400e;font-weight:600;text-transform:uppercase;letter-spacing:.05em">Due</div>
+            </div>
+          </div>
+          <div style="font-size:.8rem;font-weight:600;color:var(--text-muted);margin-bottom:var(--sp-3);text-transform:uppercase;letter-spacing:.05em">Subject Progress</div>
+          <div style="display:flex;flex-direction:column;gap:var(--sp-3)">
+            <div>
+              <div style="display:flex;justify-content:space-between;margin-bottom:4px">
+                <span style="font-size:.875rem;font-weight:500">Web Development</span>
+                <span style="font-size:.875rem;font-weight:700;color:var(--navy)">78%</span>
+              </div>
+              <div class="progress-bar"><div class="progress-fill progress-fill-blue" style="width:78%"></div></div>
+            </div>
+            <div>
+              <div style="display:flex;justify-content:space-between;margin-bottom:4px">
+                <span style="font-size:.875rem;font-weight:500">Mathematics</span>
+                <span style="font-size:.875rem;font-weight:700;color:var(--teal-dark)">60%</span>
+              </div>
+              <div class="progress-bar"><div class="progress-fill progress-fill-teal" style="width:60%"></div></div>
+            </div>
+            <div>
+              <div style="display:flex;justify-content:space-between;margin-bottom:4px">
+                <span style="font-size:.875rem;font-weight:500">Database Systems</span>
+                <span style="font-size:.875rem;font-weight:700;color:#92400e">45%</span>
+              </div>
+              <div class="progress-bar"><div class="progress-fill progress-fill-amber" style="width:45%"></div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ====================== HOW IT WORKS ====================== -->
+<section class="section" id="how-it-works">
+  <div class="container">
+    <div class="text-center reveal">
+      <div class="section-label">Simple Process</div>
+      <h2 class="h2 section-title">Up and Running in Minutes</h2>
+      <p class="section-subtitle">Three easy steps to transform how you manage your academic life.</p>
+    </div>
+
+    <div class="steps" style="margin-top:var(--sp-12)">
+      <div class="step reveal delay-1">
+        <div class="step-num">1</div>
+        <h3 class="step-title">Create Your Account</h3>
+        <p class="step-desc">Sign up for free in seconds. No credit card, no commitment. Just your email and a password to get full access to the platform.</p>
+      </div>
+      <div class="step reveal delay-2">
+        <div class="step-num">2</div>
+        <h3 class="step-title">Set Up Your Plan</h3>
+        <p class="step-desc">Add your courses, deadlines, and study goals. The platform will help you build a structured schedule tailored to your academic priorities.</p>
+      </div>
+      <div class="step reveal delay-3">
+        <div class="step-num">3</div>
+        <h3 class="step-title">Start Achieving</h3>
+        <p class="step-desc">Track progress, collaborate with groupmates, write notes, and submit assignments — all from one beautifully organized dashboard.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ====================== TESTIMONIALS ====================== -->
+<section class="section-sm" style="background:var(--bg)">
+  <div class="container">
+    <div class="text-center reveal">
+      <div class="section-label">Student Stories</div>
+      <h2 class="h2 section-title">Loved by Students Everywhere</h2>
+    </div>
+    <div class="grid grid-3 gap-6" style="margin-top:var(--sp-10)">
+      <div class="testimonial-card reveal delay-1">
+        <p class="testimonial-text">"Before Smart Planner, I was always missing deadlines and scrambling at the last minute. Now I can see everything in one place — it's genuinely changed how I study."</p>
+        <div class="testimonial-author">
+          <div class="avatar" style="background:linear-gradient(135deg,#4E9E9A,#2E5090)">SK</div>
+          <div>
+            <div class="testimonial-name">Sarah K.</div>
+            <div class="testimonial-role">Computer Science, Year 2</div>
+          </div>
+        </div>
+      </div>
+      <div class="testimonial-card reveal delay-2">
+        <p class="testimonial-text">"The group collaboration feature is amazing for our projects. We can chat, track progress, and edit documents together without leaving the app. Our team's efficiency doubled."</p>
+        <div class="testimonial-author">
+          <div class="avatar" style="background:linear-gradient(135deg,#1B3A6B,#4E9E9A)">JM</div>
+          <div>
+            <div class="testimonial-name">James M.</div>
+            <div class="testimonial-role">Business Admin, Year 3</div>
+          </div>
+        </div>
+      </div>
+      <div class="testimonial-card reveal delay-3">
+        <p class="testimonial-text">"The notes section is exactly what I needed for revision. Everything is organized by topic, searchable, and I can access it from my phone too. 10/10 would recommend."</p>
+        <div class="testimonial-author">
+          <div class="avatar" style="background:linear-gradient(135deg,#2E5090,#1B3A6B)">AL</div>
+          <div>
+            <div class="testimonial-name">Aisha L.</div>
+            <div class="testimonial-role">Engineering, Year 1</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ====================== CTA ====================== -->
+<section class="cta-section reveal">
+  <div class="container">
+    <div class="section-label" style="background:rgba(255,255,255,.1);color:rgba(255,255,255,.9);border:1px solid rgba(255,255,255,.2)">Start Today</div>
+    <h2 class="h1 cta-title" style="margin-top:var(--sp-4)">Ready to Study Smarter?</h2>
+    <p class="cta-subtitle">Join thousands of students who have already transformed their academic performance with Smart Planner.</p>
+    <div style="display:flex;align-items:center;justify-content:center;gap:var(--sp-4);flex-wrap:wrap">
+      <a href="login.html" class="btn btn-teal btn-lg">Get Started — It's Free</a>
+      <a href="dashboard.html" class="btn btn-outline btn-lg">See the Dashboard</a>
+    </div>
+  </div>
+</section>
+
+<!-- ====================== FOOTER ====================== -->
+<footer class="footer">
+  <div class="container">
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <div class="footer-logo">Smart<span>Planner</span></div>
+        <p class="footer-desc">A comprehensive academic management platform that combines scheduling, notes, assignments, and collaboration in one beautiful experience.</p>
+        <div class="footer-social" style="margin-top:var(--sp-5)">
+          <a href="#" class="social-icon" aria-label="Facebook">f</a>
+          <a href="#" class="social-icon" aria-label="Twitter">𝕏</a>
+          <a href="#" class="social-icon" aria-label="Instagram">📷</a>
+        </div>
+      </div>
+      <div>
+        <div class="footer-heading">Platform</div>
+        <div class="footer-links">
+          <a href="dashboard.html" class="footer-link">Dashboard</a>
+          <a href="assignments.html" class="footer-link">Assignments</a>
+          <a href="notes.html" class="footer-link">Notes</a>
+          <a href="document-editor.html" class="footer-link">Document Editor</a>
+          <a href="group.html" class="footer-link">Group Collaboration</a>
+        </div>
+      </div>
+      <div>
+        <div class="footer-heading">Resources</div>
+        <div class="footer-links">
+          <a href="#" class="footer-link">Getting Started</a>
+          <a href="#" class="footer-link">Student Guide</a>
+          <a href="#" class="footer-link">Features</a>
+          <a href="#" class="footer-link">Updates</a>
+        </div>
+      </div>
+      <div>
+        <div class="footer-heading">Account</div>
+        <div class="footer-links">
+          <a href="login.html" class="footer-link">Login</a>
+          <a href="login.html" class="footer-link">Register</a>
+          <a href="#" class="footer-link">Settings</a>
+          <a href="#" class="footer-link">Privacy Policy</a>
+        </div>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span class="footer-copy">© 2026 Smart Student Study Planner. All rights reserved.</span>
+      <span style="font-size:.8125rem">Built for Taylor's University — WDT ITS63904</span>
+    </div>
+  </div>
+</footer>
+
+<script>
+// ── Preloader ──
+window.addEventListener('load', () => {
+  setTimeout(() => {
+    document.getElementById('preloader').classList.add('hide');
+  }, 1300);
+});
+
+// ── Navbar scroll effect ──
+const navbar = document.getElementById('navbar');
+window.addEventListener('scroll', () => {
+  if (window.scrollY > 60) {
+    navbar.classList.add('scrolled');
+    navbar.classList.remove('navbar-light');
+  } else {
+    navbar.classList.remove('scrolled');
+    navbar.classList.add('navbar-light');
+  }
+}, { passive: true });
+
+// ── Mobile nav ──
+const hamburger = document.getElementById('navHamburger');
+const mobileNav = document.getElementById('mobileNav');
+const overlay = document.getElementById('mobileNavOverlay');
+const closeNav = document.getElementById('closeNav');
+
+function openNav() {
+  mobileNav.classList.add('open');
+  overlay.classList.add('show');
+  document.body.style.overflow = 'hidden';
+}
+function closeNavFn() {
+  mobileNav.classList.remove('open');
+  overlay.classList.remove('show');
+  document.body.style.overflow = '';
+}
+hamburger.addEventListener('click', openNav);
+closeNav.addEventListener('click', closeNavFn);
+overlay.addEventListener('click', closeNavFn);
+
+// ── Scroll reveal ──
+const revealEls = document.querySelectorAll('.reveal, .reveal-left, .reveal-right');
+const revealObs = new IntersectionObserver((entries) => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      e.target.classList.add('visible');
+      revealObs.unobserve(e.target);
+    }
+  });
+}, { threshold: 0.1, rootMargin: '0px 0px -48px 0px' });
+revealEls.forEach(el => revealObs.observe(el));
+
+// ── Hero counter ──
+function animateCount(el, target, suffix = '') {
+  const start = 0;
+  const duration = 2000;
+  let startTime = null;
+  const step = (timestamp) => {
+    if (!startTime) startTime = timestamp;
+    const progress = Math.min((timestamp - startTime) / duration, 1);
+    const eased = 1 - Math.pow(1 - progress, 3);
+    const value = Math.round(start + (target - start) * eased);
+    el.textContent = value.toLocaleString() + suffix;
+    if (progress < 1) requestAnimationFrame(step);
+  };
+  requestAnimationFrame(step);
+}
+
+const heroObs = new IntersectionObserver((entries) => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      document.querySelectorAll('[data-count]').forEach(el => {
+        const target = parseInt(el.dataset.count);
+        const suffix = el.dataset.suffix || '';
+        animateCount(el, target, suffix);
+      });
+      heroObs.disconnect();
+    }
+  });
+}, { threshold: 0.5 });
+const heroStats = document.querySelector('.hero-stats');
+if (heroStats) heroObs.observe(heroStats);
+
+// ── Progress bars (animated on scroll) ──
+const progressObs = new IntersectionObserver((entries) => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      e.target.querySelectorAll('.progress-fill').forEach(bar => {
+        const w = bar.style.width;
+        bar.style.width = '0';
+        setTimeout(() => { bar.style.width = w; }, 100);
+      });
+      progressObs.unobserve(e.target);
+    }
+  });
+}, { threshold: 0.3 });
+document.querySelectorAll('.card').forEach(c => {
+  if (c.querySelector('.progress-fill')) progressObs.observe(c);
+});
+
+// ── Button ripple ──
+document.querySelectorAll('.btn').forEach(btn => {
+  btn.addEventListener('click', function(e) {
+    const ripple = document.createElement('span');
+    ripple.classList.add('ripple');
+    const rect = this.getBoundingClientRect();
+    const size = Math.max(rect.width, rect.height);
+    ripple.style.cssText = `width:${size}px;height:${size}px;left:${e.clientX - rect.left - size/2}px;top:${e.clientY - rect.top - size/2}px`;
+    this.appendChild(ripple);
+    ripple.addEventListener('animationend', () => ripple.remove());
+  });
+});
+</script>
+</body>
+</html>
