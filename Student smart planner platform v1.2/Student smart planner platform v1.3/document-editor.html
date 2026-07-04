@@ -1,0 +1,878 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Document Editor — Smart Planner</title>
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    /* ─── Layout ─── */
+    .editor-page-body { display:grid; grid-template-columns:1fr 256px; gap:20px; align-items:start; padding:20px 24px 24px; }
+
+    /* ─── Toolbar ─── */
+    .editor-toolbar {
+      background:var(--surface); border:1px solid var(--border);
+      border-bottom:none; border-radius:var(--r-lg) var(--r-lg) 0 0;
+      padding:8px 12px; display:flex; flex-direction:column; gap:5px;
+    }
+    .tb-row { display:flex; align-items:center; gap:2px; flex-wrap:wrap; }
+    .tb-sep { width:1px; height:22px; background:var(--border); margin:0 5px; flex-shrink:0; }
+
+    /* toolbar button */
+    .tb {
+      min-width:28px; height:28px; padding:0 5px;
+      border-radius:6px; display:inline-flex; align-items:center; justify-content:center;
+      font-size:.8rem; font-weight:700; color:var(--text-muted);
+      transition:background .12s, color .12s; position:relative; cursor:pointer; flex-shrink:0;
+    }
+    .tb svg { pointer-events:none; }
+    .tb:hover { background:var(--bg); color:var(--text); }
+    .tb.on { background:var(--blue-light); color:var(--navy); }
+
+    /* tooltip */
+    .tb[data-tip]::after {
+      content:attr(data-tip);
+      position:absolute; bottom:calc(100%+6px); left:50%; transform:translateX(-50%);
+      background:#0F2449; color:#fff; font-size:.6875rem; font-weight:500;
+      white-space:nowrap; padding:3px 8px; border-radius:5px;
+      pointer-events:none; opacity:0; transition:opacity .12s; z-index:300;
+    }
+    .tb:hover[data-tip]::after { opacity:1; }
+
+    /* selects */
+    .tb-sel {
+      height:28px; padding:0 6px; border:1px solid var(--border); border-radius:6px;
+      background:var(--surface); color:var(--text); font-size:.8rem; font-family:inherit;
+      cursor:pointer; outline:none; transition:border-color .12s;
+    }
+    .tb-sel:hover { border-color:var(--border-dark); }
+    .tb-sel:focus { border-color:var(--navy); }
+    #fontFamilySelect { min-width:128px; }
+    #paragraphStyleSelect { min-width:120px; }
+
+    /* font-size stepper */
+    .tb-size { display:flex; align-items:center; border:1px solid var(--border); border-radius:6px; overflow:hidden; height:28px; }
+    .tb-size-step { width:20px; height:100%; display:flex; align-items:center; justify-content:center; font-size:13px; color:var(--text-muted); background:var(--bg); cursor:pointer; flex-shrink:0; transition:background .12s; user-select:none; }
+    .tb-size-step:hover { background:var(--border); color:var(--text); }
+    #fontSizeInput {
+      width:34px; text-align:center; border:none; border-left:1px solid var(--border); border-right:1px solid var(--border);
+      outline:none; font-size:.8rem; font-family:inherit; color:var(--text); background:var(--surface); height:100%;
+    }
+
+    /* ─── Color palette ─── */
+    .tb-color-wrap { position:relative; display:inline-block; }
+    .tb-color-btn { min-width:28px; height:28px; border-radius:6px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:1px; cursor:pointer; transition:background .12s; flex-shrink:0; }
+    .tb-color-btn:hover { background:var(--bg); }
+    .tb-color-bar { width:15px; height:3px; border-radius:2px; }
+
+    .color-panel {
+      position:absolute; top:calc(100%+6px); left:0;
+      background:var(--surface); border:1px solid var(--border);
+      border-radius:12px; padding:12px 14px 10px;
+      box-shadow:var(--shadow-lg); z-index:400; width:210px;
+      display:none; animation:cpIn .18s var(--ease-out);
+    }
+    .color-panel.open { display:block; }
+    @keyframes cpIn { from { opacity:0; transform:translateY(-6px) scale(.95); } to { opacity:1; transform:none; } }
+    .cp-title { font-size:.6875rem; font-weight:700; color:var(--text-muted); text-transform:uppercase; letter-spacing:.06em; margin-bottom:8px; }
+    .cp-grid { display:grid; grid-template-columns:repeat(8,1fr); gap:4px; margin-bottom:8px; }
+    .cp-swatch {
+      width:20px; height:20px; border-radius:5px; cursor:pointer;
+      border:1px solid rgba(0,0,0,.08); transition:transform .12s;
+      position:relative;
+    }
+    .cp-swatch:hover { transform:scale(1.35); z-index:1; }
+    .cp-swatch.sel::after { content:''; position:absolute; inset:-3px; border:2px solid var(--navy); border-radius:7px; }
+    .cp-row { display:flex; align-items:center; gap:6px; padding-top:8px; border-top:1px solid var(--border); }
+    .cp-row label { font-size:.75rem; color:var(--text-muted); flex:1; }
+    .cp-row input[type=color] { width:30px; height:24px; border:1px solid var(--border); border-radius:5px; cursor:pointer; padding:1px 2px; }
+
+    /* ─── Paper area ─── */
+    .editor-paper-outer {
+      background:var(--bg); border:1px solid var(--border); border-top:none;
+      overflow-y:auto; max-height:calc(100vh - 230px); min-height:400px;
+    }
+    .editor-area {
+      max-width:720px; margin:28px auto; padding:52px 68px;
+      background:var(--surface);
+      box-shadow:0 2px 12px rgba(15,36,73,.08), 0 0 0 1px rgba(15,36,73,.04);
+      border-radius:3px; min-height:640px;
+      font-size:16px; line-height:1.85; outline:none; color:var(--text);
+      caret-color:var(--navy);
+    }
+    .editor-area:focus { box-shadow:0 4px 20px rgba(15,36,73,.10), 0 0 0 1px rgba(27,58,107,.12); }
+    .editor-area h1 { font-size:1.875rem; font-weight:800; letter-spacing:-.04em; line-height:1.2; margin-bottom:.75rem; }
+    .editor-area h2 { font-size:1.25rem; font-weight:700; margin:1.5rem 0 .6rem; padding-bottom:.4rem; border-bottom:2px solid var(--border); }
+    .editor-area h3 { font-size:1.0625rem; font-weight:700; margin:1.25rem 0 .5rem; color:var(--navy-light); }
+    .editor-area p { margin-bottom:.875rem; }
+    .editor-area ul, .editor-area ol { padding-left:1.5rem; margin-bottom:.875rem; }
+    .editor-area blockquote { border-left:4px solid var(--teal); padding:.5rem 1rem; margin:.875rem 0; background:var(--teal-light); border-radius:0 8px 8px 0; color:var(--text-muted); font-style:italic; }
+    .editor-area hr { border:none; border-top:2px solid var(--border); margin:1.25rem 0; }
+    .editor-area a { color:var(--blue); text-decoration:underline; cursor:pointer; }
+    .editor-area code { background:var(--bg); padding:2px 6px; border-radius:4px; font-size:.875em; font-family:'Courier New',monospace; }
+    @media (max-width:900px) { .editor-area { padding:32px 24px; margin:16px; } }
+
+    /* ─── Status bar ─── */
+    .editor-statusbar {
+      display:flex; align-items:center; justify-content:space-between;
+      padding:7px 14px; background:var(--surface);
+      border:1px solid var(--border); border-top:none;
+      border-radius:0 0 var(--r-lg) var(--r-lg); gap:12px;
+    }
+    .sb-item { font-size:.7375rem; color:var(--text-muted); display:flex; align-items:center; gap:4px; }
+    .sb-dot { width:6px; height:6px; border-radius:50%; flex-shrink:0; }
+
+    /* ─── Link dialog ─── */
+    .dlg-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,.28); z-index:490; backdrop-filter:blur(3px); }
+    .dlg-overlay.open { display:block; }
+    .link-dlg {
+      display:none; position:fixed; top:50%; left:50%; transform:translate(-50%,-50%);
+      background:var(--surface); border:1px solid var(--border); border-radius:var(--r-lg);
+      padding:24px; box-shadow:var(--shadow-xl); z-index:500; width:340px;
+    }
+    .link-dlg.open { display:block; animation:cpIn .22s var(--ease-out); }
+
+    /* ─── Editor right sidebar ─── */
+    .editor-sidebar { display:flex; flex-direction:column; gap:16px; position:sticky; top:0; }
+    .outline-empty { font-size:.8125rem; color:var(--text-light); font-style:italic; padding:4px 0; }
+    .outline-item {
+      font-size:.8125rem; color:var(--text); cursor:pointer;
+      padding:5px 8px; border-radius:6px; transition:background .15s;
+      white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+    }
+    .outline-item:hover { background:var(--blue-light); color:var(--navy); }
+    .outline-h2 { padding-left:14px; color:var(--text-muted); }
+    .outline-h3 { padding-left:26px; color:var(--text-light); font-size:.75rem; }
+
+    /* recent doc rows */
+    .doc-row { display:flex; align-items:center; gap:10px; padding:7px 8px; border-radius:8px; cursor:pointer; transition:background .15s; }
+    .doc-row:hover { background:var(--bg); }
+    .doc-icon { width:32px; height:32px; border-radius:8px; background:var(--blue-light); display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+    .doc-name { font-size:.8125rem; font-weight:500; color:var(--text); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .doc-date { font-size:.6875rem; color:var(--text-muted); }
+
+    @media (max-width:1100px) { .editor-page-body { grid-template-columns:1fr; } .editor-sidebar { display:none; } }
+  </style>
+</head>
+<body>
+<div class="app-layout">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <a href="index.html" class="sidebar-logo">
+        <svg width="32" height="32" viewBox="0 0 36 36" fill="none" style="flex-shrink:0">
+          <defs><linearGradient id="lgD" x1="0" y1="0" x2="36" y2="36" gradientUnits="userSpaceOnUse"><stop offset="0%" stop-color="#0F2449"/><stop offset="100%" stop-color="#3B6ED4"/></linearGradient></defs>
+          <rect width="36" height="36" rx="9" fill="url(#lgD)"/>
+          <rect x="9" y="11" width="14" height="2.5" rx="1.25" fill="white" opacity="0.95"/>
+          <rect x="9" y="16.5" width="10" height="2" rx="1" fill="white" opacity="0.7"/>
+          <rect x="9" y="21.5" width="7" height="2" rx="1" fill="white" opacity="0.5"/>
+          <circle cx="25.5" cy="24.5" r="6" fill="#4E9E9A"/>
+          <path d="M22.5 24.5l2 2 4-4" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        Smart<span style="color:var(--teal)">Planner</span>
+      </a>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="sidebar-section-title">Main</div>
+      <a href="dashboard.html" class="sidebar-link">
+        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/></svg>
+        Dashboard
+      </a>
+      <a href="assignments.html" class="sidebar-link">
+        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+        Assignments
+      </a>
+      <a href="notes.html" class="sidebar-link">
+        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M16 13H8M16 17H8M10 9H8"/></svg>
+        Notes
+      </a>
+      <a href="document-editor.html" class="sidebar-link active">
+        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+        Document Editor
+      </a>
+      <div class="sidebar-section-title" style="margin-top:var(--sp-3)">Collaboration</div>
+      <a href="group.html" class="sidebar-link">
+        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        Group
+      </a>
+      <div class="sidebar-section-title" style="margin-top:var(--sp-3)">Account</div>
+      <a href="settings.html" class="sidebar-link">
+        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+        Settings
+      </a>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="sidebar-user">
+        <div class="avatar">XS</div>
+        <div class="sidebar-user-info">
+          <div class="sidebar-user-name">Xie Shenzhi</div>
+          <div class="sidebar-user-role">Computer Science</div>
+        </div>
+      </div>
+    </div>
+  </aside>
+  <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+  <!-- MAIN -->
+  <main class="main-content">
+    <div class="mobile-topbar">
+      <button class="hamburger-btn" id="menuBtn"><span></span><span></span><span></span></button>
+      <a href="index.html" class="sidebar-logo">
+        <svg width="28" height="28" viewBox="0 0 36 36" fill="none"><defs><linearGradient id="lgDm" x1="0" y1="0" x2="36" y2="36" gradientUnits="userSpaceOnUse"><stop offset="0%" stop-color="#0F2449"/><stop offset="100%" stop-color="#3B6ED4"/></linearGradient></defs><rect width="36" height="36" rx="9" fill="url(#lgDm)"/><rect x="9" y="11" width="14" height="2.5" rx="1.25" fill="white" opacity="0.95"/><rect x="9" y="16.5" width="10" height="2" rx="1" fill="white" opacity="0.7"/><rect x="9" y="21.5" width="7" height="2" rx="1" fill="white" opacity="0.5"/><circle cx="25.5" cy="24.5" r="6" fill="#4E9E9A"/><path d="M22.5 24.5l2 2 4-4" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Smart<span style="color:var(--teal)">Planner</span>
+      </a>
+      <div></div>
+    </div>
+
+    <!-- Page header -->
+    <div class="page-header">
+      <div style="display:flex;align-items:center;gap:12px;flex:1;min-width:0">
+        <input type="text" id="docTitle" value="Web_Development_Assignment_3.docx"
+          style="font-size:1.0625rem;font-weight:700;color:var(--text);background:none;border:none;outline:none;border-bottom:2px solid transparent;padding-bottom:2px;transition:border-color .15s;min-width:0;flex:1;max-width:340px"
+          onfocus="this.style.borderColor='var(--navy)'" onblur="this.style.borderColor='transparent'">
+        <span id="saveStatus" class="sb-item">
+          <span class="sb-dot" style="background:#22C55E"></span> Saved
+        </span>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px">
+        <!-- Collaborators -->
+        <div style="display:flex;align-items:center">
+          <div class="avatar" style="width:28px;height:28px;font-size:.6rem;border:2px solid var(--surface)" title="Xie Shenzhi">XS</div>
+          <div class="avatar" style="width:28px;height:28px;font-size:.6rem;background:linear-gradient(135deg,var(--teal-dark),var(--teal));border:2px solid var(--surface);margin-left:-8px" title="Mora Patel">MP</div>
+          <div class="avatar" style="width:28px;height:28px;font-size:.6rem;background:linear-gradient(135deg,#6B21A8,#A855F7);border:2px solid var(--surface);margin-left:-8px" title="Ke Qian">KQ</div>
+        </div>
+        <button class="btn btn-secondary btn-sm" onclick="saveDoc()">
+          <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><path d="M17 21v-8H7v8M7 3v5h8"/></svg>
+          Save
+        </button>
+        <button class="btn btn-secondary btn-sm" onclick="exportDoc()">
+          <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><path d="M16 6l-4-4-4 4"/><path d="M12 2v13"/></svg>
+          Export
+        </button>
+        <button class="btn btn-primary btn-sm">
+          <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="M8.59 13.51l6.83 3.98M15.41 6.51l-6.82 3.98"/></svg>
+          Share
+        </button>
+      </div>
+    </div>
+
+    <!-- Body -->
+    <div class="editor-page-body">
+      <div>
+        <!-- ═══ TOOLBAR ═══ -->
+        <div class="editor-toolbar">
+
+          <!-- Row 1: Paragraph style | Font | Size | Remove format -->
+          <div class="tb-row">
+            <select id="paragraphStyleSelect" class="tb-sel" onchange="setParagraphStyle(this.value)" title="Paragraph style">
+              <option value="p">Normal</option>
+              <option value="h1">Heading 1</option>
+              <option value="h2">Heading 2</option>
+              <option value="h3">Heading 3</option>
+              <option value="blockquote">Quote</option>
+              <option value="pre">Code Block</option>
+            </select>
+            <div class="tb-sep"></div>
+            <select id="fontFamilySelect" class="tb-sel" onchange="setFont(this.value)" title="Font family">
+              <option value="Inter">Inter</option>
+              <option value="Arial">Arial</option>
+              <option value="Georgia">Georgia</option>
+              <option value="Times New Roman">Times New Roman</option>
+              <option value="Courier New">Courier New</option>
+              <option value="Verdana">Verdana</option>
+            </select>
+            <div class="tb-sep"></div>
+            <!-- Font size stepper -->
+            <div class="tb-size">
+              <div class="tb-size-step" onclick="changeFontSize(-1)" title="Decrease size">−</div>
+              <input type="number" id="fontSizeInput" value="16" min="6" max="96" onchange="applyFontSize(+this.value)" onkeydown="if(event.key==='Enter')applyFontSize(+this.value)">
+              <div class="tb-size-step" onclick="changeFontSize(1)" title="Increase size">+</div>
+            </div>
+            <div class="tb-sep"></div>
+            <button class="tb" onclick="execFmt('removeFormat')" data-tip="Clear formatting">
+              <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5z"/><line x1="3" y1="3" x2="21" y2="21"/></svg>
+            </button>
+          </div>
+
+          <!-- Row 2: Format | Colors | Align | Lists | Insert | Undo/Redo -->
+          <div class="tb-row">
+            <!-- Text format -->
+            <button class="tb" data-cmd="bold" onclick="execFmt('bold')" data-tip="Bold (Ctrl+B)"><b style="font-size:.875rem">B</b></button>
+            <button class="tb" data-cmd="italic" onclick="execFmt('italic')" data-tip="Italic (Ctrl+I)"><i style="font-size:.875rem">I</i></button>
+            <button class="tb" data-cmd="underline" onclick="execFmt('underline')" data-tip="Underline (Ctrl+U)"><u style="font-size:.875rem">U</u></button>
+            <button class="tb" data-cmd="strikeThrough" onclick="execFmt('strikeThrough')" data-tip="Strikethrough"><s style="font-size:.875rem">S</s></button>
+            <button class="tb" data-cmd="superscript" onclick="execFmt('superscript')" data-tip="Superscript">
+              <span style="font-size:.75rem">x<sup style="font-size:.55rem">2</sup></span>
+            </button>
+            <button class="tb" data-cmd="subscript" onclick="execFmt('subscript')" data-tip="Subscript">
+              <span style="font-size:.75rem">x<sub style="font-size:.55rem">2</sub></span>
+            </button>
+            <div class="tb-sep"></div>
+
+            <!-- Text color -->
+            <div class="tb-color-wrap">
+              <div class="tb-color-btn tb" onclick="togglePanel('textColorPanel')" data-tip="Text color">
+                <svg width="13" height="13" fill="none" viewBox="0 0 24 24">
+                  <path d="M4 20h4l10.5-10.5a2.121 2.121 0 0 0-3-3L5 17v3z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+                </svg>
+                <div class="tb-color-bar" id="textColorBar" style="background:#000000"></div>
+              </div>
+              <div class="color-panel" id="textColorPanel">
+                <div class="cp-title">Text Color</div>
+                <div class="cp-grid" id="textColorGrid"></div>
+                <div class="cp-row">
+                  <label>Custom:</label>
+                  <input type="color" id="textColorCustom" value="#000000" oninput="applyTextColor(this.value)">
+                </div>
+              </div>
+            </div>
+
+            <!-- Highlight color -->
+            <div class="tb-color-wrap">
+              <div class="tb-color-btn tb" onclick="togglePanel('highlightPanel')" data-tip="Highlight color">
+                <svg width="13" height="13" fill="none" viewBox="0 0 24 24">
+                  <path d="M9 11l-5 5a2 2 0 0 0 0 3h8l7-7-3-3z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+                  <path d="M15 5l4 4" stroke="currentColor" stroke-width="2"/>
+                </svg>
+                <div class="tb-color-bar" id="highlightBar" style="background:#FFD700"></div>
+              </div>
+              <div class="color-panel" id="highlightPanel">
+                <div class="cp-title">Highlight Color</div>
+                <div class="cp-grid" id="highlightGrid"></div>
+                <div class="cp-row">
+                  <label>Custom:</label>
+                  <input type="color" id="highlightCustom" value="#FFFF00" oninput="applyHighlight(this.value)">
+                </div>
+              </div>
+            </div>
+
+            <div class="tb-sep"></div>
+
+            <!-- Alignment -->
+            <button class="tb" data-cmd="justifyLeft" onclick="execFmt('justifyLeft')" data-tip="Align left">
+              <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="15" y2="12"/><line x1="3" y1="18" x2="18" y2="18"/></svg>
+            </button>
+            <button class="tb" data-cmd="justifyCenter" onclick="execFmt('justifyCenter')" data-tip="Center">
+              <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="3" y1="6" x2="21" y2="6"/><line x1="6" y1="12" x2="18" y2="12"/><line x1="4" y1="18" x2="20" y2="18"/></svg>
+            </button>
+            <button class="tb" data-cmd="justifyRight" onclick="execFmt('justifyRight')" data-tip="Align right">
+              <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="3" y1="6" x2="21" y2="6"/><line x1="9" y1="12" x2="21" y2="12"/><line x1="6" y1="18" x2="21" y2="18"/></svg>
+            </button>
+            <button class="tb" data-cmd="justifyFull" onclick="execFmt('justifyFull')" data-tip="Justify">
+              <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+            </button>
+            <div class="tb-sep"></div>
+
+            <!-- Lists & indent -->
+            <button class="tb" data-cmd="insertUnorderedList" onclick="execFmt('insertUnorderedList')" data-tip="Bullet list">
+              <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="9" y1="6" x2="20" y2="6"/><line x1="9" y1="12" x2="20" y2="12"/><line x1="9" y1="18" x2="20" y2="18"/><circle cx="4" cy="6" r="1" fill="currentColor"/><circle cx="4" cy="12" r="1" fill="currentColor"/><circle cx="4" cy="18" r="1" fill="currentColor"/></svg>
+            </button>
+            <button class="tb" data-cmd="insertOrderedList" onclick="execFmt('insertOrderedList')" data-tip="Numbered list">
+              <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="10" y1="6" x2="21" y2="6"/><line x1="10" y1="12" x2="21" y2="12"/><line x1="10" y1="18" x2="21" y2="18"/><path d="M4 6h1v4M4 10h2M6 18H4l2-2.5A1.5 1.5 0 0 0 4.5 13" stroke-linecap="round"/></svg>
+            </button>
+            <button class="tb" onclick="execFmt('outdent')" data-tip="Decrease indent">
+              <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/><path d="M9 12l-6 0M7 9l-4 3 4 3"/><line x1="13" y1="12" x2="21" y2="12"/></svg>
+            </button>
+            <button class="tb" onclick="execFmt('indent')" data-tip="Increase indent">
+              <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/><path d="M3 12l6 0M3 9l4 3-4 3"/><line x1="13" y1="12" x2="21" y2="12"/></svg>
+            </button>
+            <div class="tb-sep"></div>
+
+            <!-- Insert -->
+            <button class="tb" onclick="openLinkDialog()" data-tip="Insert link (Ctrl+K)">
+              <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+            </button>
+            <button class="tb" onclick="execFmt('insertHorizontalRule')" data-tip="Horizontal rule">
+              <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="7" y2="6"/><line x1="3" y1="18" x2="7" y2="18"/></svg>
+            </button>
+            <div class="tb-sep"></div>
+
+            <!-- Undo/Redo -->
+            <button class="tb" onclick="execFmt('undo')" data-tip="Undo (Ctrl+Z)">
+              <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 7v6h6"/><path d="M3 13C5.5 5.5 16 4 21 11"/></svg>
+            </button>
+            <button class="tb" onclick="execFmt('redo')" data-tip="Redo (Ctrl+Y)">
+              <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 7v6h-6"/><path d="M21 13C18.5 5.5 8 4 3 11"/></svg>
+            </button>
+          </div>
+        </div>
+
+        <!-- Paper -->
+        <div class="editor-paper-outer" id="paperOuter">
+          <div class="editor-area" id="editor" contenteditable="true" spellcheck="true">
+            <h1>Web Development Assignment 3</h1>
+            <p style="color:var(--text-muted)"><strong>Student:</strong> Xie Shenzhi (0384864) &nbsp;|&nbsp; <strong>Course:</strong> WDT ITS63904 &nbsp;|&nbsp; <strong>Date:</strong> July 2, 2026</p>
+
+            <h2>Introduction</h2>
+            <p>This assignment explores the fundamental concepts of modern web development, focusing on building a responsive, accessible, and visually engaging student platform. The Smart Student Study Planner consolidates academic tools into one cohesive experience.</p>
+
+            <h2>1.0 HTML Structure</h2>
+            <p>HTML5 semantic tags improve page readability and accessibility, providing meaningful structure that both browsers and screen readers can interpret correctly.</p>
+            <ul>
+              <li>Semantic elements: <code>&lt;header&gt;</code>, <code>&lt;nav&gt;</code>, <code>&lt;main&gt;</code>, <code>&lt;footer&gt;</code></li>
+              <li>Forms and validation handle user authentication and data input</li>
+              <li>ARIA attributes support screen reader accessibility</li>
+            </ul>
+
+            <h2>2.0 CSS Styling</h2>
+            <p>The design system uses CSS custom properties (variables) to maintain consistent theming across all pages. Flexbox enables responsive layouts while CSS Grid handles complex multi-column structures.</p>
+            <ul>
+              <li>CSS variables define the complete design token system (colors, spacing, typography)</li>
+              <li>Media queries adapt the layout for mobile, tablet, and desktop screens</li>
+              <li>CSS animations and transitions create the Awwwards-level entry effects</li>
+            </ul>
+
+            <h2>3.0 JavaScript Interactivity</h2>
+            <p>Vanilla JavaScript handles DOM manipulation for real-time UI updates without page reloads. The Intersection Observer API powers scroll-triggered reveal animations across all pages.</p>
+            <ul>
+              <li>Event listeners handle user interactions (clicks, form submissions, keyboard input)</li>
+              <li>DOM updates add/remove/modify elements dynamically</li>
+              <li>Intersection Observer triggers animations when elements enter the viewport</li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- Status bar -->
+        <div class="editor-statusbar">
+          <div style="display:flex;align-items:center;gap:16px">
+            <span class="sb-item" id="wordCountEl">
+              <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M16 13H8M16 17H8"/></svg>
+              Words: <span id="wordNum">0</span>
+            </span>
+            <span class="sb-item">
+              Chars: <span id="charNum">0</span>
+            </span>
+            <span class="sb-item" id="selectionInfo" style="display:none">
+              Selected: <span id="selNum">0</span> chars
+            </span>
+          </div>
+          <div style="display:flex;align-items:center;gap:10px">
+            <span class="sb-item" id="autoSaveInfo">Auto-saved just now</span>
+            <span class="sb-item" style="color:var(--text-light)">Ctrl+S to save</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right sidebar -->
+      <div class="editor-sidebar">
+
+        <!-- Word count summary -->
+        <div class="card" style="padding:16px">
+          <div class="h4" style="margin-bottom:12px">Statistics</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+            <div style="background:var(--blue-light);border-radius:10px;padding:12px;text-align:center">
+              <div style="font-size:1.375rem;font-weight:800;color:var(--navy)" id="statWords">0</div>
+              <div style="font-size:.6875rem;color:var(--text-muted);font-weight:600;text-transform:uppercase;letter-spacing:.05em;margin-top:2px">Words</div>
+            </div>
+            <div style="background:var(--teal-light);border-radius:10px;padding:12px;text-align:center">
+              <div style="font-size:1.375rem;font-weight:800;color:var(--teal-dark)" id="statChars">0</div>
+              <div style="font-size:.6875rem;color:var(--text-muted);font-weight:600;text-transform:uppercase;letter-spacing:.05em;margin-top:2px">Chars</div>
+            </div>
+            <div style="background:var(--green-light);border-radius:10px;padding:12px;text-align:center">
+              <div style="font-size:1.375rem;font-weight:800;color:#166534" id="statParas">0</div>
+              <div style="font-size:.6875rem;color:var(--text-muted);font-weight:600;text-transform:uppercase;letter-spacing:.05em;margin-top:2px">Paras</div>
+            </div>
+            <div style="background:var(--amber-light);border-radius:10px;padding:12px;text-align:center">
+              <div style="font-size:1.375rem;font-weight:800;color:#92400e" id="statReadTime">0</div>
+              <div style="font-size:.6875rem;color:var(--text-muted);font-weight:600;text-transform:uppercase;letter-spacing:.05em;margin-top:2px">Min read</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Heading outline -->
+        <div class="card" style="padding:16px">
+          <div class="h4" style="margin-bottom:10px">Outline</div>
+          <div id="outlineContainer">
+            <div class="outline-empty">Headings will appear here</div>
+          </div>
+        </div>
+
+        <!-- Document info -->
+        <div class="card" style="padding:16px">
+          <div class="h4" style="margin-bottom:12px">Document Info</div>
+          <div style="display:flex;flex-direction:column;gap:8px">
+            <div style="display:flex;justify-content:space-between"><span class="xs text-muted">Created</span><span class="xs">Jun 28, 2026</span></div>
+            <div style="display:flex;justify-content:space-between"><span class="xs text-muted">Last edited</span><span class="xs" id="lastEdited">Jul 2, 2026</span></div>
+            <div style="display:flex;justify-content:space-between"><span class="xs text-muted">Owner</span><span class="xs">Xie Shenzhi</span></div>
+            <div style="display:flex;justify-content:space-between"><span class="xs text-muted">Shared with</span><span class="xs">3 people</span></div>
+          </div>
+        </div>
+
+        <!-- Recent docs -->
+        <div class="card" style="padding:16px">
+          <div class="h4" style="margin-bottom:10px">Recent Documents</div>
+          <div style="display:flex;flex-direction:column;gap:4px">
+            <div class="doc-row">
+              <div class="doc-icon"><svg width="16" height="16" fill="none" stroke="var(--navy)" stroke-width="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg></div>
+              <div style="min-width:0"><div class="doc-name">Assignment_2_Report</div><div class="doc-date">Jun 28</div></div>
+            </div>
+            <div class="doc-row">
+              <div class="doc-icon" style="background:var(--teal-light)"><svg width="16" height="16" fill="none" stroke="var(--teal-dark)" stroke-width="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg></div>
+              <div style="min-width:0"><div class="doc-name">Group_Meeting_Notes</div><div class="doc-date">Jun 25</div></div>
+            </div>
+            <div class="doc-row">
+              <div class="doc-icon" style="background:var(--amber-light)"><svg width="16" height="16" fill="none" stroke="#92400e" stroke-width="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg></div>
+              <div style="min-width:0"><div class="doc-name">Research_Summary</div><div class="doc-date">Jun 22</div></div>
+            </div>
+          </div>
+          <button class="btn btn-secondary btn-sm" style="width:100%;justify-content:center;margin-top:12px" onclick="newDoc()">
+            <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
+            New Document
+          </button>
+        </div>
+
+      </div>
+    </div><!-- /editor-page-body -->
+  </main>
+</div>
+
+<!-- Link dialog -->
+<div class="dlg-overlay" id="dlgOverlay" onclick="closeLinkDialog()"></div>
+<div class="link-dlg" id="linkDlg">
+  <div class="h4" style="margin-bottom:16px">Insert Link</div>
+  <div class="form-group">
+    <label class="form-label">Display text</label>
+    <input type="text" class="form-control" id="linkText" placeholder="Link text">
+  </div>
+  <div class="form-group">
+    <label class="form-label">URL</label>
+    <input type="url" class="form-control" id="linkUrl" placeholder="https://example.com">
+  </div>
+  <div style="display:flex;gap:8px;margin-top:8px">
+    <button class="btn btn-primary" style="flex:1;justify-content:center" onclick="insertLink()">Insert</button>
+    <button class="btn btn-secondary" onclick="closeLinkDialog()">Cancel</button>
+  </div>
+</div>
+
+<script src="js/app.js"></script>
+<script>
+// ─── Sidebar ───
+const menuBtn = document.getElementById('menuBtn');
+const sidebar = document.getElementById('sidebar');
+const overlay = document.getElementById('sidebarOverlay');
+menuBtn.addEventListener('click', () => { sidebar.classList.toggle('open'); overlay.classList.toggle('show'); });
+overlay.addEventListener('click', () => { sidebar.classList.remove('open'); overlay.classList.remove('show'); });
+
+// ─── Color palettes ───
+const TEXT_COLORS = [
+  '#000000','#333333','#555555','#777777','#999999','#BBBBBB','#DDDDDD','#FFFFFF',
+  '#C62828','#E53935','#FF7043','#FF8F00','#F9A825','#558B2F','#00695C','#1565C0',
+  '#283593','#4527A0','#6A1B9A','#AD1457','#0F2449','#1B3A6B','#4E9E9A','#3B6ED4'
+];
+const HIGHLIGHT_COLORS = [
+  'transparent','#FFD700','#FFFF00','#ADFF2F','#00FA9A','#00BFFF','#87CEFA','#FF6347',
+  '#FFB6C1','#DA70D6','#E6E6FA','#FFDAB9','#FFFACD','#98FB98','#B0E0E6','#F0E68C',
+  '#FFE4E1','#F5F5DC','#E0E0E0','#C8E6C9','#BBDEFB','#E1BEE7','#FFECB3','#FFCCBC'
+];
+
+let activeTextColor = '#000000';
+let activeHighlight = '#FFD700';
+
+function buildColorGrid(containerId, colors, onPick) {
+  const grid = document.getElementById(containerId);
+  grid.innerHTML = '';
+  colors.forEach((c, i) => {
+    const sw = document.createElement('div');
+    sw.className = 'cp-swatch';
+    sw.style.background = c === 'transparent' ? 'linear-gradient(135deg, #fff 45%, #f00 45%, #f00 55%, #fff 55%)' : c;
+    if (c === 'transparent') sw.title = 'No highlight';
+    sw.addEventListener('click', () => { onPick(c); });
+    grid.appendChild(sw);
+  });
+}
+buildColorGrid('textColorGrid', TEXT_COLORS, applyTextColor);
+buildColorGrid('highlightGrid', HIGHLIGHT_COLORS, applyHighlight);
+
+function applyTextColor(c) {
+  activeTextColor = c;
+  document.getElementById('textColorBar').style.background = c;
+  document.getElementById('textColorCustom').value = c === 'transparent' ? '#000000' : c;
+  document.execCommand('foreColor', false, c);
+  closeAllPanels();
+  document.getElementById('editor').focus();
+}
+function applyHighlight(c) {
+  activeHighlight = c;
+  document.getElementById('highlightBar').style.background = c === 'transparent' ? 'var(--border)' : c;
+  if (c !== 'transparent') document.getElementById('highlightCustom').value = c;
+  if (c === 'transparent') {
+    document.execCommand('hiliteColor', false, 'transparent');
+    document.execCommand('backColor', false, 'transparent');
+  } else {
+    document.execCommand('hiliteColor', false, c);
+  }
+  closeAllPanels();
+  document.getElementById('editor').focus();
+}
+
+function togglePanel(id) {
+  const panel = document.getElementById(id);
+  const isOpen = panel.classList.contains('open');
+  closeAllPanels();
+  if (!isOpen) panel.classList.add('open');
+}
+function closeAllPanels() {
+  document.querySelectorAll('.color-panel').forEach(p => p.classList.remove('open'));
+}
+document.addEventListener('click', e => {
+  if (!e.target.closest('.tb-color-wrap')) closeAllPanels();
+});
+
+// ─── Core formatting ───
+const editor = document.getElementById('editor');
+function execFmt(cmd) {
+  document.execCommand(cmd, false, null);
+  editor.focus();
+  syncToolbar();
+}
+
+// Paragraph style
+function setParagraphStyle(val) {
+  editor.focus();
+  document.execCommand('formatBlock', false, val === 'pre' ? 'pre' : val);
+  editor.focus();
+  updateOutline();
+}
+
+// Font family
+function setFont(name) {
+  document.execCommand('fontName', false, name);
+  editor.focus();
+}
+
+// Font size (span approach for px precision)
+let currentFontSize = 16;
+function applyFontSize(px) {
+  if (!px || px < 6 || px > 200) return;
+  currentFontSize = px;
+  document.getElementById('fontSizeInput').value = px;
+  const sel = window.getSelection();
+  if (!sel || !sel.rangeCount || sel.isCollapsed) {
+    editor.style.fontSize = px + 'px';
+    return;
+  }
+  // Wrap selection in span
+  document.execCommand('fontSize', false, '7');
+  editor.querySelectorAll('font[size="7"]').forEach(el => {
+    const span = document.createElement('span');
+    span.style.fontSize = px + 'px';
+    span.innerHTML = el.innerHTML;
+    el.replaceWith(span);
+  });
+  editor.focus();
+}
+function changeFontSize(delta) {
+  const sizes = [6,7,8,9,10,11,12,13,14,15,16,18,20,22,24,26,28,32,36,40,48,56,64,72,96];
+  const cur = +document.getElementById('fontSizeInput').value || 16;
+  const idx = sizes.findIndex(s => s >= cur);
+  const next = delta > 0 ? sizes[Math.min(idx + 1, sizes.length - 1)] : sizes[Math.max(idx - 1, 0)];
+  applyFontSize(next);
+}
+
+// ─── Toolbar state sync ───
+document.addEventListener('selectionchange', () => {
+  if (document.activeElement === editor || editor.contains(document.activeElement)) syncToolbar();
+});
+
+function syncToolbar() {
+  // Format buttons
+  ['bold','italic','underline','strikeThrough','superscript','subscript',
+   'insertUnorderedList','insertOrderedList',
+   'justifyLeft','justifyCenter','justifyRight','justifyFull'].forEach(cmd => {
+    const btn = document.querySelector(`[data-cmd="${cmd}"]`);
+    if (btn) {
+      try { btn.classList.toggle('on', document.queryCommandState(cmd)); } catch(e) {}
+    }
+  });
+
+  // Font family
+  try {
+    const font = document.queryCommandValue('fontName').replace(/['"]/g,'').trim();
+    if (font) {
+      const sel = document.getElementById('fontFamilySelect');
+      const match = [...sel.options].find(o => font.toLowerCase().includes(o.value.toLowerCase()));
+      if (match) sel.value = match.value;
+    }
+  } catch(e) {}
+
+  // Font size from computed style
+  try {
+    const sel = window.getSelection();
+    if (sel && sel.rangeCount) {
+      let node = sel.getRangeAt(0).startContainer;
+      if (node.nodeType === 3) node = node.parentNode;
+      if (node && editor.contains(node)) {
+        const px = parseInt(window.getComputedStyle(node).fontSize) || currentFontSize;
+        document.getElementById('fontSizeInput').value = px;
+        currentFontSize = px;
+      }
+    }
+  } catch(e) {}
+
+  // Paragraph style
+  try {
+    const block = document.queryCommandValue('formatBlock').toLowerCase();
+    const styleMap = { h1:'h1', h2:'h2', h3:'h3', blockquote:'blockquote', pre:'pre', p:'p', div:'p', '':'p' };
+    const mapped = styleMap[block] || 'p';
+    document.getElementById('paragraphStyleSelect').value = mapped;
+  } catch(e) {}
+}
+
+// ─── Link dialog ───
+let savedRange = null;
+function openLinkDialog() {
+  const sel = window.getSelection();
+  if (sel && sel.rangeCount) {
+    savedRange = sel.getRangeAt(0).cloneRange();
+    document.getElementById('linkText').value = sel.toString();
+  }
+  document.getElementById('dlgOverlay').classList.add('open');
+  document.getElementById('linkDlg').classList.add('open');
+  document.getElementById('linkUrl').focus();
+}
+function closeLinkDialog() {
+  document.getElementById('dlgOverlay').classList.remove('open');
+  document.getElementById('linkDlg').classList.remove('open');
+}
+function insertLink() {
+  const url = document.getElementById('linkUrl').value.trim();
+  if (!url) return;
+  const text = document.getElementById('linkText').value.trim();
+  if (savedRange) {
+    const sel = window.getSelection();
+    sel.removeAllRanges();
+    sel.addRange(savedRange);
+  }
+  if (text && savedRange && savedRange.collapsed) {
+    document.execCommand('insertHTML', false, `<a href="${url}" target="_blank">${text}</a>`);
+  } else {
+    document.execCommand('createLink', false, url);
+    const links = editor.querySelectorAll('a:not([target])');
+    links.forEach(a => a.target = '_blank');
+  }
+  closeLinkDialog();
+  document.getElementById('linkUrl').value = '';
+  document.getElementById('linkText').value = '';
+}
+
+// ─── Heading outline ───
+function updateOutline() {
+  const headings = editor.querySelectorAll('h1,h2,h3');
+  const container = document.getElementById('outlineContainer');
+  if (!headings.length) {
+    container.innerHTML = '<div class="outline-empty">Headings will appear here</div>';
+    return;
+  }
+  container.innerHTML = '';
+  headings.forEach(h => {
+    const div = document.createElement('div');
+    const tag = h.tagName.toLowerCase();
+    div.className = `outline-item outline-${tag}`;
+    div.textContent = (tag === 'h1' ? '' : tag === 'h2' ? '↳ ' : '  ↳ ') + h.textContent;
+    div.addEventListener('click', () => h.scrollIntoView({ behavior:'smooth', block:'center' }));
+    container.appendChild(div);
+  });
+}
+
+// ─── Word / char / para counts ───
+function updateCounts() {
+  const text = editor.innerText || '';
+  const words = text.trim() ? text.trim().split(/\s+/).filter(Boolean).length : 0;
+  const chars = text.replace(/\n/g,'').length;
+  const paras = editor.querySelectorAll('p,h1,h2,h3,li').length;
+  const readTime = Math.max(1, Math.round(words / 200));
+
+  document.getElementById('wordNum').textContent = words;
+  document.getElementById('charNum').textContent = chars;
+  document.getElementById('statWords').textContent = words.toLocaleString();
+  document.getElementById('statChars').textContent = chars.toLocaleString();
+  document.getElementById('statParas').textContent = paras;
+  document.getElementById('statReadTime').textContent = readTime;
+}
+
+// Selection character count
+document.addEventListener('selectionchange', () => {
+  const sel = window.getSelection();
+  const selInfo = document.getElementById('selectionInfo');
+  if (sel && !sel.isCollapsed && editor.contains(sel.anchorNode)) {
+    const selText = sel.toString().length;
+    document.getElementById('selNum').textContent = selText;
+    selInfo.style.display = 'flex';
+  } else {
+    selInfo.style.display = 'none';
+  }
+});
+
+// ─── Auto-save & dirty state ───
+let saveTimer;
+function markDirty() {
+  const status = document.getElementById('saveStatus');
+  status.innerHTML = '<span class="sb-dot" style="background:var(--amber)"></span> Unsaved';
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(() => saveDoc(true), 5000);
+}
+
+function saveDoc(auto = false) {
+  const status = document.getElementById('saveStatus');
+  status.innerHTML = '<span class="sb-dot" style="background:var(--amber)"></span> Saving…';
+  setTimeout(() => {
+    const now = new Date();
+    const t = now.toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});
+    status.innerHTML = `<span class="sb-dot" style="background:#22C55E"></span> Saved`;
+    document.getElementById('autoSaveInfo').textContent = `Auto-saved at ${t}`;
+    document.getElementById('lastEdited').textContent = now.toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'});
+  }, 600);
+}
+
+// ─── Export (print dialog) ───
+function exportDoc() {
+  const title = document.getElementById('docTitle').value.replace(/\.docx$/i,'');
+  const content = editor.innerHTML;
+  const win = window.open('','_blank');
+  win.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>${title}</title>
+  <style>
+    body { font-family:Arial,sans-serif; font-size:12pt; line-height:1.8; max-width:760px; margin:40px auto; color:#000; }
+    h1 { font-size:22pt; } h2 { font-size:16pt; border-bottom:1pt solid #ccc; padding-bottom:4pt; }
+    h3 { font-size:13pt; } blockquote { border-left:4pt solid #999; padding:6pt 12pt; color:#555; }
+    ul,ol { padding-left:20pt; } code { background:#f0f0f0; padding:1pt 4pt; }
+    a { color:#1565C0; }
+    @media print { body { margin:0; } }
+  </style></head><body>${content}</body></html>`);
+  win.document.close();
+  setTimeout(() => win.print(), 300);
+}
+
+// ─── New document ───
+function newDoc() {
+  if (!editor.innerText.trim() || confirm('Discard current document and start new?')) {
+    editor.innerHTML = '<h1>Untitled Document</h1><p></p>';
+    document.getElementById('docTitle').value = 'Untitled_Document.docx';
+    updateCounts(); updateOutline();
+    editor.focus();
+  }
+}
+
+// ─── Keyboard shortcuts ───
+document.addEventListener('keydown', e => {
+  if (e.ctrlKey || e.metaKey) {
+    if (e.key === 's') { e.preventDefault(); saveDoc(); }
+    if (e.key === 'k') { e.preventDefault(); openLinkDialog(); }
+  }
+});
+
+// ─── Editor events ───
+editor.addEventListener('input', () => {
+  updateCounts();
+  updateOutline();
+  markDirty();
+});
+editor.addEventListener('keyup', syncToolbar);
+editor.addEventListener('mouseup', syncToolbar);
+
+// ─── Init ───
+updateCounts();
+updateOutline();
+</script>
+</body>
+</html>

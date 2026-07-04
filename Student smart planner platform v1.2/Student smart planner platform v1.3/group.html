@@ -1,0 +1,383 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Group Collaboration — Smart Planner</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div class="app-layout">
+
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <a href="index.html" class="sidebar-logo">
+        <svg width="32" height="32" viewBox="0 0 36 36" fill="none" style="flex-shrink:0"><rect width="36" height="36" rx="9" fill="url(#lgG)"/><defs><linearGradient id="lgG" x1="0" y1="0" x2="36" y2="36" gradientUnits="userSpaceOnUse"><stop offset="0%" stop-color="#0F2449"/><stop offset="100%" stop-color="#3B6ED4"/></linearGradient></defs><rect x="9" y="11" width="14" height="2.5" rx="1.25" fill="white" opacity="0.95"/><rect x="9" y="16.5" width="10" height="2" rx="1" fill="white" opacity="0.7"/><rect x="9" y="21.5" width="7" height="2" rx="1" fill="white" opacity="0.5"/><circle cx="25.5" cy="24.5" r="6" fill="#4E9E9A"/><path d="M22.5 24.5l2 2 4-4" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Smart<span style="color:var(--teal)">Planner</span>
+      </a>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="sidebar-section-title">Main</div>
+      <a href="dashboard.html" class="sidebar-link">
+        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/></svg>
+        Dashboard
+      </a>
+      <a href="assignments.html" class="sidebar-link">
+        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+        Assignments
+      </a>
+      <a href="notes.html" class="sidebar-link">
+        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M16 13H8M16 17H8M10 9H8"/></svg>
+        Notes
+      </a>
+      <a href="document-editor.html" class="sidebar-link">
+        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+        Document Editor
+      </a>
+      <div class="sidebar-section-title" style="margin-top:var(--sp-3)">Collaboration</div>
+      <a href="group.html" class="sidebar-link active">
+        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        Group
+      </a>
+      <div class="sidebar-section-title" style="margin-top:var(--sp-3)">Account</div>
+      <a href="settings.html" class="sidebar-link">
+        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+        Settings
+      </a>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="sidebar-user">
+        <div class="avatar">XS</div>
+        <div class="sidebar-user-info">
+          <div class="sidebar-user-name">Xie Shenzhi</div>
+          <div class="sidebar-user-role">Computer Science</div>
+        </div>
+      </div>
+    </div>
+  </aside>
+  <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+  <main class="main-content">
+    <div class="mobile-topbar">
+      <button class="hamburger-btn" id="menuBtn"><span></span><span></span><span></span></button>
+      <a href="index.html" class="sidebar-logo"><svg width="32" height="32" viewBox="0 0 36 36" fill="none" style="flex-shrink:0"><rect width="36" height="36" rx="9" fill="url(#lgG)"/><defs><linearGradient id="lgG" x1="0" y1="0" x2="36" y2="36" gradientUnits="userSpaceOnUse"><stop offset="0%" stop-color="#0F2449"/><stop offset="100%" stop-color="#3B6ED4"/></linearGradient></defs><rect x="9" y="11" width="14" height="2.5" rx="1.25" fill="white" opacity="0.95"/><rect x="9" y="16.5" width="10" height="2" rx="1" fill="white" opacity="0.7"/><rect x="9" y="21.5" width="7" height="2" rx="1" fill="white" opacity="0.5"/><circle cx="25.5" cy="24.5" r="6" fill="#4E9E9A"/><path d="M22.5 24.5l2 2 4-4" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>Smart<span style="color:var(--teal)">Planner</span></a>
+      <div></div>
+    </div>
+
+    <div class="page-header">
+      <div>
+        <div class="page-title">Group Collaboration</div>
+        <div class="page-subtitle">Coordinate group assignments with chat rooms, meetings, shared files and live progress updates</div>
+      </div>
+      <button class="btn btn-primary btn-sm">
+        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M15 10l4.553-2.276A1 1 0 0 1 21 8.618v6.764a1 1 0 0 1-1.447.894L15 14M3 8a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8z"/></svg>
+        Start Meeting
+      </button>
+    </div>
+
+    <div class="page-body">
+      <div class="group-layout">
+        <!-- Team sidebar -->
+        <div class="chat-sidebar">
+          <div style="padding:var(--sp-4) var(--sp-4) var(--sp-3);border-bottom:1px solid var(--border)">
+            <div style="font-weight:700;font-size:.9375rem;color:var(--text)">Web Assignment Team</div>
+            <div style="font-size:.75rem;color:var(--text-muted)">WDT ITS63904</div>
+          </div>
+          <nav style="padding:var(--sp-3)">
+            <div style="padding:9px var(--sp-3);border-radius:var(--r-md);font-size:.875rem;color:var(--text-muted);cursor:pointer;transition:background var(--dur-fast)" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=''">Overview</div>
+            <div style="padding:9px var(--sp-3);border-radius:var(--r-md);font-size:.875rem;font-weight:600;color:var(--navy);background:var(--blue-light);cursor:pointer">Group Chat</div>
+            <div style="padding:9px var(--sp-3);border-radius:var(--r-md);font-size:.875rem;color:var(--text-muted);cursor:pointer;transition:background var(--dur-fast)" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=''">Meetings</div>
+            <div style="padding:9px var(--sp-3);border-radius:var(--r-md);font-size:.875rem;color:var(--text-muted);cursor:pointer;transition:background var(--dur-fast)" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=''">Shared Files</div>
+            <div style="padding:9px var(--sp-3);border-radius:var(--r-md);font-size:.875rem;color:var(--text-muted);cursor:pointer;transition:background var(--dur-fast)" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=''">Members</div>
+          </nav>
+          <div style="padding:var(--sp-3) var(--sp-4);border-top:1px solid var(--border)">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:var(--sp-3)">
+              <div style="font-size:.75rem;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.05em">Members <span id="memberCount"></span></div>
+              <button class="btn btn-secondary btn-sm" style="padding:4px 10px;font-size:.75rem" onclick="openMemberModal()" title="Add a member">
+                <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
+                Add
+              </button>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:var(--sp-2)" id="memberList"></div>
+          </div>
+        </div>
+
+        <!-- Chat main -->
+        <div class="chat-main">
+          <div class="chat-header">
+            <div>
+              <div style="font-weight:700;font-size:.9375rem">Group Chat Room</div>
+              <div style="font-size:.75rem;color:var(--green);display:flex;align-items:center;gap:4px">
+                <div style="width:6px;height:6px;background:var(--green);border-radius:50%"></div>
+                <span id="onlineCount">2 members online</span>
+              </div>
+            </div>
+            <div style="display:flex;gap:var(--sp-2)">
+              <button class="btn btn-secondary btn-sm">📎 Files</button>
+              <button class="btn btn-secondary btn-sm">🔍 Search</button>
+              <button class="btn btn-primary btn-sm">Clear</button>
+            </div>
+          </div>
+
+          <div class="chat-messages" id="chatMessages">
+            <div class="msg-bubble other">
+              <div class="msg-sender">Mora</div>
+              <div class="msg-content">Hey team! I finished the documentation sections for assignment 2. Can you check if everything looks correct?</div>
+              <div class="msg-meta">10:15 AM</div>
+            </div>
+            <div class="msg-bubble me">
+              <div class="msg-content">Looks great Mora! I reviewed all the class notes too 👍</div>
+              <div class="msg-meta">10:23 AM</div>
+            </div>
+            <div class="msg-bubble other">
+              <div class="msg-sender">Daniel</div>
+              <div class="msg-content">I'll update the deadline reminders for all tasks, don't worry 😊</div>
+              <div class="msg-meta">10:30 AM</div>
+            </div>
+            <div class="msg-bubble other">
+              <div class="msg-sender">Mora</div>
+              <div class="msg-content">Thanks Daniel! Let's finalize the assignment document today. Meeting at 2PM?</div>
+              <div class="msg-meta">10:45 AM</div>
+            </div>
+            <div class="msg-bubble me">
+              <div class="msg-content">I just shared the document in Shared Files. Let's review together on the call! 📄</div>
+              <div class="msg-meta">11:02 AM</div>
+            </div>
+            <div id="dynamicMessages"></div>
+          </div>
+
+          <div class="chat-input-area">
+            <input type="text" class="chat-input" id="msgInput" placeholder="Type a message…" onkeydown="if(event.key==='Enter')sendMsg()">
+            <button class="btn btn-secondary btn-icon" title="Attach file">📎</button>
+            <button class="btn btn-primary btn-icon" onclick="sendMsg()" title="Send">➤</button>
+          </div>
+        </div>
+
+        <!-- Info panel -->
+        <div class="chat-info">
+          <div style="padding:var(--sp-5);border-bottom:1px solid var(--border)">
+            <div style="font-size:.8125rem;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:var(--sp-4)">Today's Meeting</div>
+            <div style="background:linear-gradient(135deg,var(--navy-dark),var(--navy));border-radius:var(--r-md);padding:var(--sp-4);color:#fff;margin-bottom:var(--sp-3)">
+              <div style="font-size:.8125rem;color:rgba(255,255,255,.65);margin-bottom:4px">📅 Tuesday, June 30</div>
+              <div style="font-size:1.125rem;font-weight:700;margin-bottom:4px">2:00 PM — 3:00 PM</div>
+              <div style="font-size:.8125rem;color:rgba(255,255,255,.7)">Assignment 3 Planning</div>
+            </div>
+            <button class="btn btn-teal" style="width:100%;justify-content:center">
+              <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M15 10l4.553-2.276A1 1 0 0 1 21 8.618v6.764a1 1 0 0 1-1.447.894L15 14M3 8a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8z"/></svg>
+              Join Room
+            </button>
+          </div>
+
+          <div style="padding:var(--sp-5)">
+            <div style="font-size:.8125rem;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:var(--sp-4)">Project Progress</div>
+            <div style="display:flex;flex-direction:column;gap:var(--sp-4)">
+              <div>
+                <div style="display:flex;justify-content:space-between;margin-bottom:6px">
+                  <span style="font-size:.875rem;font-weight:500">Research</span>
+                  <span style="font-size:.875rem;font-weight:700;color:var(--navy)">90%</span>
+                </div>
+                <div class="progress-bar"><div class="progress-fill progress-fill-blue" style="width:90%"></div></div>
+              </div>
+              <div>
+                <div style="display:flex;justify-content:space-between;margin-bottom:6px">
+                  <span style="font-size:.875rem;font-weight:500">Design</span>
+                  <span style="font-size:.875rem;font-weight:700;color:var(--teal-dark)">75%</span>
+                </div>
+                <div class="progress-bar"><div class="progress-fill progress-fill-teal" style="width:75%"></div></div>
+              </div>
+              <div>
+                <div style="display:flex;justify-content:space-between;margin-bottom:6px">
+                  <span style="font-size:.875rem;font-weight:500">Documentation</span>
+                  <span style="font-size:.875rem;font-weight:700;color:#92400e">60%</span>
+                </div>
+                <div class="progress-bar"><div class="progress-fill progress-fill-amber" style="width:60%"></div></div>
+              </div>
+              <div>
+                <div style="display:flex;justify-content:space-between;margin-bottom:6px">
+                  <span style="font-size:.875rem;font-weight:500">Implementation</span>
+                  <span style="font-size:.875rem;font-weight:700;color:var(--navy)">40%</span>
+                </div>
+                <div class="progress-bar"><div class="progress-fill progress-fill-blue" style="width:40%"></div></div>
+              </div>
+            </div>
+
+            <div style="margin-top:var(--sp-5);padding-top:var(--sp-4);border-top:1px solid var(--border)">
+              <div style="font-size:.8125rem;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:var(--sp-3)">Shared Files</div>
+              <div style="display:flex;flex-direction:column;gap:var(--sp-2)">
+                <div style="display:flex;align-items:center;gap:var(--sp-2);padding:var(--sp-2);border-radius:var(--r-sm);cursor:pointer;transition:background var(--dur-fast)" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=''">
+                  <span>📄</span>
+                  <div style="flex:1;min-width:0">
+                    <div style="font-size:.8125rem;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Assignment_2_Final.docx</div>
+                    <div style="font-size:.7rem;color:var(--text-muted)">Jun 28</div>
+                  </div>
+                </div>
+                <div style="display:flex;align-items:center;gap:var(--sp-2);padding:var(--sp-2);border-radius:var(--r-sm);cursor:pointer;transition:background var(--dur-fast)" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=''">
+                  <span>🖼</span>
+                  <div style="flex:1;min-width:0">
+                    <div style="font-size:.8125rem;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Wireframes_v3.fig</div>
+                    <div style="font-size:.7rem;color:var(--text-muted)">Jun 25</div>
+                  </div>
+                </div>
+                <div style="display:flex;align-items:center;gap:var(--sp-2);padding:var(--sp-2);border-radius:var(--r-sm);cursor:pointer;transition:background var(--dur-fast)" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=''">
+                  <span>📊</span>
+                  <div style="flex:1;min-width:0">
+                    <div style="font-size:.8125rem;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Project_Plan.xlsx</div>
+                    <div style="font-size:.7rem;color:var(--text-muted)">Jun 20</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- ── Add Member Modal ── -->
+<div class="sp-modal-backdrop" id="memberModal">
+  <div class="sp-modal" style="position:relative">
+    <button class="sp-modal-close" onclick="closeMemberModal()">✕</button>
+    <div class="sp-modal-title">Add a group member</div>
+    <div class="sp-modal-sub">Invite a classmate to Web Assignment Team</div>
+    <div class="stg-input-group" style="display:flex;flex-direction:column;gap:6px;margin-bottom:14px">
+      <label style="font-size:.8125rem;font-weight:600;color:var(--text-muted)">Full name</label>
+      <input type="text" class="form-control" id="nmName" placeholder="e.g. Li Wei">
+    </div>
+    <div style="display:flex;flex-direction:column;gap:6px;margin-bottom:14px">
+      <label style="font-size:.8125rem;font-weight:600;color:var(--text-muted)">Email</label>
+      <input type="email" class="form-control" id="nmEmail" placeholder="liwei@taylors.edu.my">
+    </div>
+    <div style="display:flex;flex-direction:column;gap:6px;margin-bottom:18px">
+      <label style="font-size:.8125rem;font-weight:600;color:var(--text-muted)">Role</label>
+      <select class="form-control" id="nmRole" style="cursor:pointer">
+        <option>Frontend Developer</option>
+        <option>Backend Developer</option>
+        <option>UI/UX Designer</option>
+        <option>Tester</option>
+        <option>Documentation</option>
+      </select>
+    </div>
+    <div style="font-size:.75rem;color:#EF4444;height:16px;margin-bottom:8px" id="nmError"></div>
+    <button class="btn btn-primary" style="width:100%;justify-content:center" onclick="submitMember()">
+      Add to group
+      <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
+    </button>
+  </div>
+</div>
+
+<script src="js/app.js"></script>
+<script>
+const menuBtn = document.getElementById('menuBtn');
+const sidebar = document.getElementById('sidebar');
+const overlay = document.getElementById('sidebarOverlay');
+menuBtn.addEventListener('click', () => { sidebar.classList.toggle('open'); overlay.classList.toggle('show'); });
+overlay.addEventListener('click', () => { sidebar.classList.remove('open'); overlay.classList.remove('show'); });
+
+function escapeHTML(s) {
+  return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+function sendMsg() {
+  const input = document.getElementById('msgInput');
+  const text = input.value.trim();
+  if (!text) return;
+  const container = document.getElementById('dynamicMessages');
+  const now = new Date();
+  const time = now.toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'});
+  const bubble = document.createElement('div');
+  bubble.className = 'msg-bubble me';
+  bubble.innerHTML = `<div class="msg-content">${escapeHTML(text)}</div><div class="msg-meta">${time}</div>`;
+  bubble.style.animation = 'heroFadeUp .3s var(--ease-out) both';
+  container.appendChild(bubble);
+  input.value = '';
+  const chat = document.getElementById('chatMessages');
+  chat.scrollTop = chat.scrollHeight;
+}
+
+/* ── Members: rendered from localStorage (SP.members) ── */
+function renderMembers() {
+  const list = document.getElementById('memberList');
+  const members = SP.members();
+  list.innerHTML = '';
+  members.forEach((m, i) => {
+    const row = document.createElement('div');
+    row.className = 'member-row';
+    row.style.animationDelay = (i * 60) + 'ms';
+    const initials = SP.initials(m.name);
+    const dot = m.online
+      ? '<div style="position:absolute;bottom:0;right:0;width:8px;height:8px;background:var(--green);border-radius:50%;border:1.5px solid var(--surface)"></div>'
+      : '';
+    const you = m.you ? ' <span style="color:var(--teal);font-size:.7rem">(you)</span>' : '';
+    const removeBtn = m.you ? '' :
+      `<button class="member-remove" title="Remove member" onclick="removeMember('${escapeHTML(m.email)}')">✕</button>`;
+    row.innerHTML =
+      `<div style="position:relative">
+         <div class="avatar" style="width:28px;height:28px;font-size:.625rem;background:${m.color}">${initials}</div>${dot}
+       </div>
+       <span style="font-size:.8125rem;font-weight:500;${m.online ? '' : 'color:var(--text-muted)'}" title="${escapeHTML(m.role || '')}">${escapeHTML(m.name)}${you}</span>
+       ${removeBtn}`;
+    list.appendChild(row);
+  });
+  document.getElementById('memberCount').textContent = '(' + members.length + ')';
+  const online = members.filter(m => m.online).length;
+  document.getElementById('onlineCount').textContent = online + ' member' + (online === 1 ? '' : 's') + ' online';
+}
+
+function openMemberModal() {
+  document.getElementById('nmError').textContent = '';
+  document.getElementById('memberModal').classList.add('show');
+  setTimeout(() => document.getElementById('nmName').focus(), 250);
+}
+function closeMemberModal() { document.getElementById('memberModal').classList.remove('show'); }
+document.getElementById('memberModal').addEventListener('click', e => {
+  if (e.target === e.currentTarget) closeMemberModal();
+});
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeMemberModal(); });
+
+function submitMember() {
+  const name = document.getElementById('nmName').value.trim();
+  const email = document.getElementById('nmEmail').value.trim();
+  const role = document.getElementById('nmRole').value;
+  const err = document.getElementById('nmError');
+  if (!name) { err.textContent = 'Please enter a name'; return; }
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { err.textContent = 'Please enter a valid email'; return; }
+  const res = SP.addMember({ name, email, role });
+  if (!res.ok) { err.textContent = res.error; return; }
+  renderMembers();
+  closeMemberModal();
+  document.getElementById('nmName').value = '';
+  document.getElementById('nmEmail').value = '';
+  SP.toast(name + ' added to the group');
+  /* system message in chat */
+  const container = document.getElementById('dynamicMessages');
+  const sys = document.createElement('div');
+  sys.style.cssText = 'text-align:center;font-size:.75rem;color:var(--text-light);margin:10px 0;animation:heroFadeUp .3s var(--ease-out) both';
+  sys.textContent = '— ' + name + ' joined the group —';
+  container.appendChild(sys);
+  const chat = document.getElementById('chatMessages');
+  chat.scrollTop = chat.scrollHeight;
+}
+
+function removeMember(email) {
+  const m = SP.members().find(x => x.email === email);
+  if (!m) return;
+  if (!confirm('Remove ' + m.name + ' from the group?')) return;
+  SP.removeMember(email);
+  renderMembers();
+  SP.toast(m.name + ' removed from the group');
+}
+
+renderMembers();
+
+// Animate progress bars
+setTimeout(() => {
+  document.querySelectorAll('.progress-fill').forEach(bar => {
+    const w = bar.style.width;
+    bar.style.width = '0';
+    setTimeout(() => { bar.style.width = w; }, 100);
+  });
+}, 500);
+</script>
+</body>
+</html>
