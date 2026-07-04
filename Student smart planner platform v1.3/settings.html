@@ -1,0 +1,1115 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Settings — Smart Planner</title>
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    /* ═══ Dark mode variables ═══ */
+    [data-theme="dark"] {
+      --bg:          #111827;
+      --surface:     #1F2937;
+      --border:      #374151;
+      --border-dark: #4B5563;
+      --text:        #F9FAFB;
+      --text-muted:  #9CA3AF;
+      --text-light:  #6B7280;
+      --blue-light:  #1e3a5f;
+      --teal-light:  #064e3b;
+      --green-light: #14532d;
+      --amber-light: #78350f;
+      --red-light:   #7f1d1d;
+      --shadow-sm:   0 1px 3px rgba(0,0,0,.3), 0 1px 2px rgba(0,0,0,.2);
+      --shadow-md:   0 4px 16px rgba(0,0,0,.4);
+    }
+    [data-theme="dark"] .sidebar   { background:var(--surface); border-color:var(--border); }
+    [data-theme="dark"] .card      { background:var(--surface); border-color:var(--border); }
+    [data-theme="dark"] .main-content { background:var(--bg); }
+    [data-theme="dark"] .stg-nav   { background:var(--surface); border-color:var(--border); }
+
+    /* ═══ Settings layout ═══ */
+    .stg-wrap {
+      display:grid; grid-template-columns:220px 1fr;
+      gap:24px; padding:0 24px 40px; align-items:start;
+    }
+
+    /* ─ Left nav ─ */
+    .stg-nav {
+      background:var(--surface); border:1px solid var(--border);
+      border-radius:var(--r-lg); overflow:hidden;
+      position:sticky; top:16px;
+    }
+    .stg-nav-section {
+      font-size:.6875rem; font-weight:700; color:var(--text-light);
+      text-transform:uppercase; letter-spacing:.08em;
+      padding:14px 16px 6px;
+    }
+    .stg-nav-item {
+      display:flex; align-items:center; gap:10px;
+      padding:10px 16px; font-size:.875rem; font-weight:500;
+      color:var(--text-muted); cursor:pointer;
+      transition:background .15s, color .15s;
+      border-left:3px solid transparent;
+    }
+    .stg-nav-item:hover { background:var(--bg); color:var(--text); }
+    .stg-nav-item.active {
+      background:var(--blue-light); color:var(--navy);
+      font-weight:700; border-left-color:var(--navy);
+    }
+    [data-theme="dark"] .stg-nav-item.active { color:#60A5FA; border-left-color:#60A5FA; }
+    .stg-nav-item svg { flex-shrink:0; opacity:.7; }
+    .stg-nav-item.active svg { opacity:1; }
+    .stg-nav-divider { height:1px; background:var(--border); margin:6px 0; }
+
+    /* ─ Content panels ─ */
+    .stg-panel { display:none; animation:stgIn .22s var(--ease-out); }
+    .stg-panel.active { display:block; }
+    @keyframes stgIn { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:none; } }
+
+    .stg-section {
+      background:var(--surface); border:1px solid var(--border);
+      border-radius:var(--r-lg); padding:24px; margin-bottom:20px;
+    }
+    .stg-section-title { font-size:1rem; font-weight:800; color:var(--text); letter-spacing:-.02em; margin-bottom:4px; }
+    .stg-section-sub   { font-size:.8125rem; color:var(--text-muted); margin-bottom:20px; }
+    .stg-row {
+      display:flex; align-items:center; justify-content:space-between;
+      padding:14px 0; border-bottom:1px solid var(--border); gap:16px;
+    }
+    .stg-row:last-child  { border-bottom:none; padding-bottom:0; }
+    .stg-row:first-of-type { padding-top:0; }
+    .stg-row-info { flex:1; min-width:0; }
+    .stg-row-label { font-size:.9rem; font-weight:600; color:var(--text); }
+    .stg-row-desc  { font-size:.8rem; color:var(--text-muted); margin-top:2px; line-height:1.45; }
+
+    /* ─ Toggle switch ─ */
+    .toggle-wrap { flex-shrink:0; }
+    .toggle { display:none; }
+    .toggle + label {
+      display:block; width:44px; height:24px;
+      background:var(--border-dark); border-radius:12px;
+      cursor:pointer; transition:background .2s; position:relative;
+    }
+    .toggle + label::after {
+      content:''; position:absolute; width:18px; height:18px;
+      border-radius:50%; background:#fff; top:3px; left:3px;
+      transition:transform .25s cubic-bezier(.34,1.56,.64,1), box-shadow .2s;
+      box-shadow:0 1px 4px rgba(0,0,0,.2);
+    }
+    .toggle:checked + label { background:var(--teal); }
+    .toggle:checked + label::after { transform:translateX(20px); }
+
+    /* ─ Form elements ─ */
+    .stg-input {
+      width:100%; padding:10px 13px; border:1.5px solid var(--border);
+      border-radius:var(--r-md); font-size:.9rem; font-family:inherit;
+      background:var(--surface); color:var(--text); outline:none;
+      transition:border-color .15s, box-shadow .15s;
+    }
+    .stg-input:focus { border-color:var(--navy); box-shadow:0 0 0 3px rgba(27,58,107,.1); }
+    [data-theme="dark"] .stg-input:focus { box-shadow:0 0 0 3px rgba(96,165,250,.15); }
+    .stg-input-grid { display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-bottom:14px; }
+    .stg-input-group { display:flex; flex-direction:column; gap:6px; margin-bottom:14px; }
+    .stg-label { font-size:.8125rem; font-weight:600; color:var(--text-muted); }
+    textarea.stg-input { resize:vertical; min-height:80px; line-height:1.6; }
+
+    /* ─ Avatar ─ */
+    .avatar-editor { display:flex; align-items:center; gap:20px; margin-bottom:24px; }
+    .avatar-wrap   { position:relative; cursor:pointer; flex-shrink:0; }
+    .avatar-big {
+      width:72px; height:72px; border-radius:50%;
+      background:linear-gradient(135deg,var(--navy),var(--blue));
+      display:flex; align-items:center; justify-content:center;
+      font-size:1.375rem; font-weight:800; color:#fff; letter-spacing:-.02em;
+      background-size:cover; background-position:center;
+    }
+    .avatar-overlay {
+      position:absolute; inset:0; border-radius:50%;
+      background:rgba(0,0,0,.5); display:flex; align-items:center; justify-content:center;
+      opacity:0; transition:opacity .2s;
+    }
+    .avatar-wrap:hover .avatar-overlay { opacity:1; }
+    .avatar-meta { flex:1; }
+    .avatar-meta-name { font-size:1.0625rem; font-weight:800; color:var(--text); }
+    .avatar-meta-role { font-size:.8125rem; color:var(--text-muted); margin-top:2px; }
+    .avatar-btns  { display:flex; gap:8px; margin-top:10px; }
+
+    /* ─ Theme cards ─ */
+    .theme-cards { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; }
+    .theme-card {
+      border:2px solid var(--border); border-radius:12px;
+      cursor:pointer; transition:border-color .2s, transform .2s; overflow:hidden;
+    }
+    .theme-card:hover { transform:translateY(-2px); }
+    .theme-card.sel   { border-color:var(--navy); }
+    [data-theme="dark"] .theme-card.sel { border-color:#60A5FA; }
+    .theme-preview { height:72px; padding:10px; display:flex; flex-direction:column; gap:5px; }
+    .tp-light { background:#F7F9FC; }
+    .tp-dark  { background:#1F2937; }
+    .tp-sys   { background:linear-gradient(135deg,#F7F9FC 50%,#1F2937 50%); }
+    .tp-bar   { border-radius:3px; height:6px; }
+    .theme-label {
+      padding:8px 10px; font-size:.8125rem; font-weight:600; color:var(--text-muted);
+      border-top:1px solid var(--border); background:var(--surface);
+      text-align:center; display:flex; align-items:center; justify-content:center; gap:6px;
+    }
+    .theme-card.sel .theme-label { color:var(--navy); }
+    [data-theme="dark"] .theme-card.sel .theme-label { color:#60A5FA; }
+    .theme-check {
+      width:16px; height:16px; border-radius:50%;
+      background:var(--navy); display:none; align-items:center; justify-content:center;
+    }
+    [data-theme="dark"] .theme-check { background:#60A5FA; }
+    .theme-card.sel .theme-check { display:flex; }
+
+    /* ─ Accent swatches ─ */
+    .accent-grid { display:flex; gap:8px; flex-wrap:wrap; margin-top:4px; }
+    .accent-swatch {
+      width:32px; height:32px; border-radius:8px;
+      cursor:pointer; transition:transform .15s; position:relative;
+    }
+    .accent-swatch:hover { transform:scale(1.15); }
+    .accent-swatch.sel::after {
+      content:''; position:absolute; inset:-3px;
+      border-radius:11px; border:2.5px solid var(--text);
+    }
+    .accent-swatch.sel::before {
+      content:'✓'; position:absolute; inset:0;
+      display:flex; align-items:center; justify-content:center;
+      color:#fff; font-size:.75rem; font-weight:800;
+    }
+
+    /* ─ Font size range ─ */
+    .fs-slider {
+      -webkit-appearance:none; height:5px; border-radius:3px; outline:none; cursor:pointer;
+      background:linear-gradient(to right, var(--navy) var(--pct,50%), var(--border) var(--pct,50%));
+    }
+    .fs-slider::-webkit-slider-thumb {
+      -webkit-appearance:none; width:18px; height:18px; border-radius:50%;
+      background:var(--navy); border:2px solid #fff; box-shadow:0 1px 4px rgba(0,0,0,.2);
+      transition:transform .15s;
+    }
+    .fs-slider::-webkit-slider-thumb:hover { transform:scale(1.2); }
+
+    /* ─ Password bars ─ */
+    .pwd-bars { display:flex; gap:4px; margin-top:6px; }
+    .pwd-bar  { flex:1; height:3px; border-radius:2px; background:var(--border); transition:background .3s; }
+    .pwd-bar.w { background:#EF4444; }
+    .pwd-bar.f { background:#F59E0B; }
+    .pwd-bar.g { background:#3B6ED4; }
+    .pwd-bar.s { background:#22C55E; }
+    .pwd-hint  { font-size:.7375rem; color:var(--text-muted); margin-top:4px; }
+
+    /* ─ Sessions ─ */
+    .session-item {
+      display:flex; align-items:center; gap:14px;
+      padding:12px 0; border-bottom:1px solid var(--border);
+    }
+    .session-item:last-child { border-bottom:none; }
+    .session-icon {
+      width:38px; height:38px; border-radius:10px;
+      background:var(--bg); display:flex; align-items:center; justify-content:center; flex-shrink:0;
+    }
+    .session-info  { flex:1; }
+    .session-name  { font-size:.875rem; font-weight:600; color:var(--text); }
+    .session-meta  { font-size:.75rem; color:var(--text-muted); margin-top:2px; }
+    .session-badge { font-size:.6875rem; font-weight:700; color:#22C55E; }
+
+    /* ─ Notif chip ─ */
+    .notif-chip {
+      display:inline-flex; align-items:center; gap:5px;
+      padding:3px 10px; border-radius:999px; font-size:.6875rem; font-weight:700;
+      border:1.5px solid var(--border); color:var(--text-muted); cursor:pointer; transition:all .15s;
+    }
+    .notif-chip.on { background:var(--blue-light); border-color:var(--navy); color:var(--navy); }
+    [data-theme="dark"] .notif-chip.on { border-color:#60A5FA; color:#60A5FA; }
+
+    /* ─ Privacy cards ─ */
+    .privacy-cards { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; }
+    .privacy-card {
+      border:2px solid var(--border); border-radius:12px; padding:14px;
+      cursor:pointer; transition:all .15s; text-align:center;
+    }
+    .privacy-card:hover { border-color:var(--border-dark); }
+    .privacy-card.sel   { border-color:var(--navy); background:var(--blue-light); }
+    [data-theme="dark"] .privacy-card.sel { border-color:#60A5FA; }
+    .privacy-card-icon  { font-size:1.25rem; margin-bottom:6px; }
+    .privacy-card-label { font-size:.8125rem; font-weight:700; color:var(--text); }
+    .privacy-card-desc  { font-size:.6875rem; color:var(--text-muted); margin-top:2px; line-height:1.4; }
+    .privacy-card.sel .privacy-card-label { color:var(--navy); }
+    [data-theme="dark"] .privacy-card.sel .privacy-card-label { color:#60A5FA; }
+
+    /* ─ Integrations ─ */
+    .integ-card {
+      display:flex; align-items:center; gap:14px;
+      padding:16px; border:1.5px solid var(--border); border-radius:12px;
+      margin-bottom:10px; transition:border-color .15s;
+    }
+    .integ-card:hover { border-color:var(--border-dark); }
+    .integ-logo  { width:40px; height:40px; border-radius:10px; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+    .integ-info  { flex:1; }
+    .integ-name  { font-size:.9rem; font-weight:700; color:var(--text); }
+    .integ-status { font-size:.75rem; color:var(--text-muted); margin-top:2px; }
+    .integ-connected { color:#22C55E; font-weight:700; }
+
+    /* ─ Danger zone ─ */
+    .danger-zone {
+      border:1.5px solid #FCA5A5; border-radius:var(--r-lg);
+      padding:20px; background:#FEF2F2;
+    }
+    [data-theme="dark"] .danger-zone { background:#7f1d1d; border-color:#B91C1C; }
+
+    /* ─ About ─ */
+    .about-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+    .about-item { background:var(--bg); border-radius:10px; padding:14px; }
+    .about-item-label { font-size:.6875rem; font-weight:700; color:var(--text-muted); text-transform:uppercase; letter-spacing:.06em; }
+    .about-item-value { font-size:.9375rem; font-weight:700; color:var(--text); margin-top:4px; }
+    .about-link {
+      display:flex; align-items:center; justify-content:space-between;
+      padding:12px 0; border-bottom:1px solid var(--border);
+      color:var(--text); cursor:pointer; font-size:.875rem; transition:color .15s;
+    }
+    .about-link:hover { color:var(--navy); }
+    .about-link:last-child { border-bottom:none; }
+
+    /* ─ Verified badge ─ */
+    .verified-badge {
+      display:inline-flex; align-items:center; gap:4px;
+      font-size:.6875rem; font-weight:700; color:#22C55E;
+      background:#F0FDF4; padding:2px 8px; border-radius:999px;
+    }
+    [data-theme="dark"] .verified-badge { background:#14532d; }
+
+    /* ─ Save toast ─ */
+    .save-toast {
+      position:fixed; bottom:24px; right:24px; z-index:9999;
+      background:#0F2449; color:#fff; padding:12px 20px;
+      border-radius:12px; font-size:.875rem; font-weight:600;
+      display:flex; align-items:center; gap:10px;
+      box-shadow:0 8px 32px rgba(0,0,0,.2);
+      transform:translateY(80px); opacity:0;
+      transition:transform .35s cubic-bezier(.16,1,.3,1), opacity .35s;
+      pointer-events:none;
+    }
+    .save-toast.show { transform:translateY(0); opacity:1; }
+  </style>
+</head>
+<body>
+<div class="app-layout">
+
+  <!-- ════ SIDEBAR ════ -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <a href="index.html" class="sidebar-logo">
+        <svg width="32" height="32" viewBox="0 0 36 36" fill="none" style="flex-shrink:0">
+          <defs><linearGradient id="lgST" x1="0" y1="0" x2="36" y2="36" gradientUnits="userSpaceOnUse"><stop offset="0%" stop-color="#0F2449"/><stop offset="100%" stop-color="#3B6ED4"/></linearGradient></defs>
+          <rect width="36" height="36" rx="9" fill="url(#lgST)"/>
+          <rect x="9" y="11" width="14" height="2.5" rx="1.25" fill="white" opacity="0.95"/>
+          <rect x="9" y="16.5" width="10" height="2" rx="1" fill="white" opacity="0.7"/>
+          <rect x="9" y="21.5" width="7" height="2" rx="1" fill="white" opacity="0.5"/>
+          <circle cx="25.5" cy="24.5" r="6" fill="#4E9E9A"/>
+          <path d="M22.5 24.5l2 2 4-4" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        Smart<span style="color:var(--teal)">Planner</span>
+      </a>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="sidebar-section-title">Main</div>
+      <a href="dashboard.html" class="sidebar-link">
+        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/></svg>
+        Dashboard
+      </a>
+      <a href="assignments.html" class="sidebar-link">
+        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+        Assignments
+      </a>
+      <a href="notes.html" class="sidebar-link">
+        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M16 13H8M16 17H8M10 9H8"/></svg>
+        Notes
+      </a>
+      <a href="document-editor.html" class="sidebar-link">
+        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+        Document Editor
+      </a>
+      <div class="sidebar-section-title" style="margin-top:var(--sp-3)">Collaboration</div>
+      <a href="group.html" class="sidebar-link">
+        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        Group
+      </a>
+      <div class="sidebar-section-title" style="margin-top:var(--sp-3)">Account</div>
+      <a href="settings.html" class="sidebar-link active">
+        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+        Settings
+      </a>
+      <a href="login.html" class="sidebar-link">
+        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+        Logout
+      </a>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="sidebar-user">
+        <div class="avatar">XS</div>
+        <div class="sidebar-user-info">
+          <div class="sidebar-user-name">Xie Shenzhi</div>
+          <div class="sidebar-user-role">Computer Science</div>
+        </div>
+        <svg width="16" height="16" fill="none" stroke="var(--text-light)" stroke-width="2" viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg>
+      </div>
+    </div>
+  </aside>
+  <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+  <!-- ════ MAIN ════ -->
+  <main class="main-content">
+    <div class="mobile-topbar">
+      <button class="hamburger-btn" id="menuBtn"><span></span><span></span><span></span></button>
+      <a href="index.html" class="sidebar-logo">
+        <svg width="28" height="28" viewBox="0 0 36 36" fill="none">
+          <defs><linearGradient id="lgSTm" x1="0" y1="0" x2="36" y2="36" gradientUnits="userSpaceOnUse"><stop offset="0%" stop-color="#0F2449"/><stop offset="100%" stop-color="#3B6ED4"/></linearGradient></defs>
+          <rect width="36" height="36" rx="9" fill="url(#lgSTm)"/>
+          <rect x="9" y="11" width="14" height="2.5" rx="1.25" fill="white" opacity="0.95"/>
+          <rect x="9" y="16.5" width="10" height="2" rx="1" fill="white" opacity="0.7"/>
+          <rect x="9" y="21.5" width="7" height="2" rx="1" fill="white" opacity="0.5"/>
+          <circle cx="25.5" cy="24.5" r="6" fill="#4E9E9A"/>
+          <path d="M22.5 24.5l2 2 4-4" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        Smart<span style="color:var(--teal)">Planner</span>
+      </a>
+      <div></div>
+    </div>
+
+    <div class="page-header">
+      <div>
+        <div class="page-title">Settings</div>
+        <div class="page-subtitle">Manage your account, preferences and privacy</div>
+      </div>
+    </div>
+
+    <div class="stg-wrap">
+
+      <!-- ════ LEFT NAV ════ -->
+      <nav class="stg-nav">
+        <div class="stg-nav-section">Account</div>
+        <div class="stg-nav-item active" onclick="showPanel('profile',this)">
+          <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+          Profile
+        </div>
+        <div class="stg-nav-item" onclick="showPanel('security',this)">
+          <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+          Security
+        </div>
+        <div class="stg-nav-divider"></div>
+        <div class="stg-nav-section">Preferences</div>
+        <div class="stg-nav-item" onclick="showPanel('appearance',this)">
+          <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>
+          Appearance
+        </div>
+        <div class="stg-nav-item" onclick="showPanel('notifications',this)">
+          <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+          Notifications
+        </div>
+        <div class="stg-nav-item" onclick="showPanel('privacy',this)">
+          <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          Privacy
+        </div>
+        <div class="stg-nav-divider"></div>
+        <div class="stg-nav-section">More</div>
+        <div class="stg-nav-item" onclick="showPanel('integrations',this)">
+          <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="17" cy="7" r="3"/><circle cx="7" cy="17" r="3"/><circle cx="17" cy="17" r="3"/><path d="M7 7l10 10"/></svg>
+          Integrations
+        </div>
+        <div class="stg-nav-item" onclick="showPanel('about',this)">
+          <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>
+          About
+        </div>
+      </nav>
+
+      <!-- ════ PANELS ════ -->
+      <div>
+
+        <!-- ── PROFILE ── -->
+        <div class="stg-panel active" id="panel-profile">
+          <div class="stg-section">
+            <div class="stg-section-title">Personal Information</div>
+            <div class="stg-section-sub">Update your profile details and public information</div>
+
+            <div class="avatar-editor">
+              <div class="avatar-wrap" onclick="document.getElementById('avatarInput').click()">
+                <div class="avatar-big" id="avatarBig" data-user-avatar>XS</div>
+                <div class="avatar-overlay">
+                  <svg width="20" height="20" fill="none" stroke="#fff" stroke-width="2" viewBox="0 0 24 24"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+                </div>
+              </div>
+              <input type="file" id="avatarInput" accept="image/*" style="display:none" onchange="previewAvatar(this)">
+              <div class="avatar-meta">
+                <div class="avatar-meta-name" data-user-name>Xie Shenzhi</div>
+                <div class="avatar-meta-role" id="avatarMetaRole">Computer Science · Year 2 · Taylor's University</div>
+                <div class="avatar-btns">
+                  <button class="btn btn-secondary btn-sm" onclick="document.getElementById('avatarInput').click()">Change photo</button>
+                  <button class="btn btn-secondary btn-sm" style="color:#EF4444" onclick="removeAvatar()">Remove</button>
+                </div>
+              </div>
+            </div>
+
+            <div class="stg-input-grid">
+              <div class="stg-input-group" style="margin:0">
+                <label class="stg-label">First name</label>
+                <input type="text" class="stg-input" id="pfFirst" value="Shenzhi">
+              </div>
+              <div class="stg-input-group" style="margin:0">
+                <label class="stg-label">Last name</label>
+                <input type="text" class="stg-input" id="pfLast" value="Xie">
+              </div>
+            </div>
+
+            <div class="stg-input-group" style="margin-top:14px">
+              <label class="stg-label">Display name (nickname)</label>
+              <input type="text" class="stg-input" id="pfNickname" value="Xie Shenzhi" placeholder="How your name appears across the platform">
+            </div>
+
+            <div class="stg-input-group">
+              <label class="stg-label">Username</label>
+              <div style="position:relative">
+                <span style="position:absolute;left:13px;top:50%;transform:translateY(-50%);color:var(--text-light);font-size:.875rem;pointer-events:none">@</span>
+                <input type="text" class="stg-input" id="pfUsername" value="shenzhixie" style="padding-left:28px">
+              </div>
+            </div>
+
+            <div class="stg-input-group">
+              <label class="stg-label" style="display:flex;align-items:center;justify-content:space-between">
+                Email address
+                <span class="verified-badge">
+                  <svg width="10" height="10" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg>
+                  Verified
+                </span>
+              </label>
+              <input type="email" class="stg-input" id="pfEmail" value="shenzhixie2@gmail.com" readonly title="Email is your account ID and cannot be changed">
+            </div>
+
+            <div class="stg-input-grid">
+              <div class="stg-input-group" style="margin:0">
+                <label class="stg-label">University</label>
+                <input type="text" class="stg-input" id="pfUniversity" value="Taylor's University">
+              </div>
+              <div class="stg-input-group" style="margin:0">
+                <label class="stg-label">Program</label>
+                <select class="stg-input" id="pfProgram" style="cursor:pointer">
+                  <option selected>Computer Science</option>
+                  <option>Software Engineering</option>
+                  <option>Business Administration</option>
+                  <option>Engineering</option>
+                  <option>Arts & Design</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="stg-input-group" style="margin-top:14px">
+              <label class="stg-label">Year of study</label>
+              <div style="display:flex;gap:8px">
+                <label style="flex:1;font-size:.875rem"><input type="radio" name="year" value="1" style="margin-right:5px;accent-color:var(--navy)">Year 1</label>
+                <label style="flex:1;font-size:.875rem"><input type="radio" name="year" value="2" checked style="margin-right:5px;accent-color:var(--navy)">Year 2</label>
+                <label style="flex:1;font-size:.875rem"><input type="radio" name="year" value="3" style="margin-right:5px;accent-color:var(--navy)">Year 3</label>
+                <label style="flex:1;font-size:.875rem"><input type="radio" name="year" value="4" style="margin-right:5px;accent-color:var(--navy)">Year 4</label>
+              </div>
+            </div>
+
+            <div class="stg-input-group">
+              <label class="stg-label" style="display:flex;justify-content:space-between">
+                Bio <span id="bioCount" style="color:var(--text-light);font-weight:400">0 / 160</span>
+              </label>
+              <textarea class="stg-input" id="bioInput" maxlength="160"
+                oninput="document.getElementById('bioCount').textContent=this.value.length+' / 160'"
+                placeholder="Tell your group members about yourself…"></textarea>
+            </div>
+
+            <button class="btn btn-primary" onclick="saveProfile()">Save changes</button>
+          </div>
+        </div>
+
+        <!-- ── SECURITY ── -->
+        <div class="stg-panel" id="panel-security">
+          <div class="stg-section">
+            <div class="stg-section-title">Change Password</div>
+            <div class="stg-section-sub">Use a strong password with a mix of letters, numbers and symbols</div>
+            <div class="stg-input-group">
+              <label class="stg-label">Current password</label>
+              <input type="password" class="stg-input" id="curPwd" placeholder="Enter current password">
+            </div>
+            <div class="stg-input-group">
+              <label class="stg-label">New password</label>
+              <input type="password" class="stg-input" id="newPwd" placeholder="Min. 8 characters" oninput="checkPwdStrength(this.value)">
+              <div class="pwd-bars"><div class="pwd-bar" id="pb1"></div><div class="pwd-bar" id="pb2"></div><div class="pwd-bar" id="pb3"></div><div class="pwd-bar" id="pb4"></div></div>
+              <div class="pwd-hint" id="pwdHint">Enter a password to see its strength</div>
+            </div>
+            <div class="stg-input-group">
+              <label class="stg-label">Confirm new password</label>
+              <input type="password" class="stg-input" id="confirmPwd" placeholder="Repeat new password">
+            </div>
+            <button class="btn btn-primary" onclick="changePassword()">Update password</button>
+          </div>
+
+          <div class="stg-section">
+            <div class="stg-section-title">Two-Factor Authentication</div>
+            <div class="stg-section-sub">Add an extra layer of security to your account</div>
+            <div class="stg-row">
+              <div class="stg-row-info">
+                <div class="stg-row-label">Authenticator App</div>
+                <div class="stg-row-desc">Use Google Authenticator or similar app to generate one-time codes</div>
+              </div>
+              <div class="toggle-wrap"><input type="checkbox" class="toggle" id="t2fa"><label for="t2fa"></label></div>
+            </div>
+            <div class="stg-row">
+              <div class="stg-row-info">
+                <div class="stg-row-label">SMS Verification</div>
+                <div class="stg-row-desc">Receive a one-time code by SMS when signing in</div>
+              </div>
+              <div class="toggle-wrap"><input type="checkbox" class="toggle" id="tSms"><label for="tSms"></label></div>
+            </div>
+          </div>
+
+          <div class="stg-section">
+            <div class="stg-section-title">Active Sessions</div>
+            <div class="stg-section-sub">These devices are currently signed into your account</div>
+            <div class="session-item">
+              <div class="session-icon">
+                <svg width="20" height="20" fill="none" stroke="var(--navy)" stroke-width="2" viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
+              </div>
+              <div class="session-info">
+                <div class="session-name">Windows 11 · Chrome 124</div>
+                <div class="session-meta">Malaysia · 60.48.xxx.xxx</div>
+              </div>
+              <span class="session-badge">● This device</span>
+            </div>
+            <div class="session-item">
+              <div class="session-icon">
+                <svg width="20" height="20" fill="none" stroke="var(--text-muted)" stroke-width="2" viewBox="0 0 24 24"><rect x="5" y="2" width="14" height="20" rx="2"/><path d="M12 18h.01"/></svg>
+              </div>
+              <div class="session-info">
+                <div class="session-name">iOS 17 · Safari</div>
+                <div class="session-meta">Malaysia · 60.48.xxx.xxx · 2 hours ago</div>
+              </div>
+              <button class="btn btn-secondary btn-sm" style="color:#EF4444" onclick="revokeSession(this)">Revoke</button>
+            </div>
+            <div class="session-item">
+              <div class="session-icon">
+                <svg width="20" height="20" fill="none" stroke="var(--text-muted)" stroke-width="2" viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
+              </div>
+              <div class="session-info">
+                <div class="session-name">macOS · Firefox 125</div>
+                <div class="session-meta">Kuala Lumpur · 175.136.xxx.xxx · 3 days ago</div>
+              </div>
+              <button class="btn btn-secondary btn-sm" style="color:#EF4444" onclick="revokeSession(this)">Revoke</button>
+            </div>
+            <button class="btn btn-secondary" style="margin-top:12px;color:#EF4444" onclick="revokeAll()">Sign out all other devices</button>
+          </div>
+
+          <div class="danger-zone">
+            <div style="font-size:1rem;font-weight:800;color:#B91C1C;margin-bottom:4px">Danger Zone</div>
+            <div style="font-size:.8125rem;color:#DC2626;margin-bottom:16px">These actions are permanent and cannot be undone.</div>
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap">
+              <div>
+                <div style="font-size:.875rem;font-weight:600;color:var(--text)">Delete Account</div>
+                <div style="font-size:.8rem;color:var(--text-muted)">Permanently delete your data, notes, assignments and settings</div>
+              </div>
+              <button class="btn" style="background:#EF4444;color:#fff;white-space:nowrap" onclick="confirmDelete()">Delete account</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── APPEARANCE ── -->
+        <div class="stg-panel" id="panel-appearance">
+          <div class="stg-section">
+            <div class="stg-section-title">Theme</div>
+            <div class="stg-section-sub">Choose how Smart Planner looks to you</div>
+            <div class="theme-cards">
+              <div class="theme-card sel" id="tc-light" onclick="selectTheme('light')">
+                <div class="theme-preview tp-light">
+                  <div class="tp-bar" style="width:55%;background:#1B3A6B;opacity:.28"></div>
+                  <div class="tp-bar" style="width:80%;background:#1B3A6B;opacity:.13"></div>
+                  <div class="tp-bar" style="width:40%;background:#1B3A6B;opacity:.09"></div>
+                </div>
+                <div class="theme-label">
+                  <div class="theme-check"><svg width="10" height="10" fill="none" stroke="#fff" stroke-width="2.5" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg></div>
+                  Light
+                </div>
+              </div>
+              <div class="theme-card" id="tc-dark" onclick="selectTheme('dark')">
+                <div class="theme-preview tp-dark">
+                  <div class="tp-bar" style="width:55%;background:#60A5FA;opacity:.35"></div>
+                  <div class="tp-bar" style="width:80%;background:#60A5FA;opacity:.18"></div>
+                  <div class="tp-bar" style="width:40%;background:#60A5FA;opacity:.1"></div>
+                </div>
+                <div class="theme-label">
+                  <div class="theme-check"><svg width="10" height="10" fill="none" stroke="#fff" stroke-width="2.5" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg></div>
+                  Dark
+                </div>
+              </div>
+              <div class="theme-card" id="tc-system" onclick="selectTheme('system')">
+                <div class="theme-preview tp-sys"></div>
+                <div class="theme-label">
+                  <div class="theme-check"><svg width="10" height="10" fill="none" stroke="#fff" stroke-width="2.5" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg></div>
+                  System
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="stg-section">
+            <div class="stg-section-title">Accent Color</div>
+            <div class="stg-section-sub">Personalize the highlight color across the platform</div>
+            <div class="accent-grid">
+              <div class="accent-swatch sel" style="background:#1B3A6B" onclick="selectAccent(this,'#1B3A6B')"></div>
+              <div class="accent-swatch" style="background:#4E9E9A" onclick="selectAccent(this,'#4E9E9A')"></div>
+              <div class="accent-swatch" style="background:#3B6ED4" onclick="selectAccent(this,'#3B6ED4')"></div>
+              <div class="accent-swatch" style="background:#7C3AED" onclick="selectAccent(this,'#7C3AED')"></div>
+              <div class="accent-swatch" style="background:#EC4899" onclick="selectAccent(this,'#EC4899')"></div>
+              <div class="accent-swatch" style="background:#EF4444" onclick="selectAccent(this,'#EF4444')"></div>
+              <div class="accent-swatch" style="background:#F59E0B" onclick="selectAccent(this,'#F59E0B')"></div>
+              <div class="accent-swatch" style="background:#22C55E" onclick="selectAccent(this,'#22C55E')"></div>
+            </div>
+          </div>
+
+          <div class="stg-section">
+            <div class="stg-section-title">Typography & Layout</div>
+            <div class="stg-section-sub">Adjust text size and layout density</div>
+            <div class="stg-row">
+              <div class="stg-row-info">
+                <div class="stg-row-label">Interface font size</div>
+                <div class="stg-row-desc">Affects the main navigation and card text</div>
+              </div>
+              <div style="display:flex;align-items:center;gap:10px;flex-shrink:0">
+                <span style="font-size:.75rem;color:var(--text-muted)">A</span>
+                <input type="range" class="fs-slider" min="1" max="3" step="1" value="2" id="fontSizeRange" oninput="setFontSize(this)" style="width:80px;--pct:50%">
+                <span style="font-size:1rem;color:var(--text-muted)">A</span>
+              </div>
+            </div>
+            <div class="stg-row">
+              <div class="stg-row-info">
+                <div class="stg-row-label">Compact sidebar</div>
+                <div class="stg-row-desc">Show only icons in the sidebar navigation</div>
+              </div>
+              <div class="toggle-wrap"><input type="checkbox" class="toggle" id="tCompact"><label for="tCompact"></label></div>
+            </div>
+            <div class="stg-row">
+              <div class="stg-row-info">
+                <div class="stg-row-label">Reduce motion</div>
+                <div class="stg-row-desc">Minimize animations for accessibility</div>
+              </div>
+              <div class="toggle-wrap"><input type="checkbox" class="toggle" id="tMotion"><label for="tMotion"></label></div>
+            </div>
+            <div class="stg-input-group" style="margin-top:16px">
+              <label class="stg-label">Language</label>
+              <select class="stg-input" style="cursor:pointer">
+                <option selected>English</option>
+                <option>中文 (Chinese)</option>
+                <option>Bahasa Melayu</option>
+                <option>Bahasa Indonesia</option>
+              </select>
+            </div>
+            <button class="btn btn-primary" onclick="saveSettings('Appearance')">Save preferences</button>
+          </div>
+        </div>
+
+        <!-- ── NOTIFICATIONS ── -->
+        <div class="stg-panel" id="panel-notifications">
+          <div class="stg-section">
+            <div class="stg-section-title">Delivery Channels</div>
+            <div class="stg-section-sub">Choose how you want to receive notifications</div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap">
+              <div class="notif-chip on" onclick="this.classList.toggle('on')">
+                <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><path d="M22 6l-10 7L2 6"/></svg>
+                Email
+              </div>
+              <div class="notif-chip on" onclick="this.classList.toggle('on')">
+                <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="5" y="2" width="14" height="20" rx="2"/><path d="M12 18h.01"/></svg>
+                Push
+              </div>
+              <div class="notif-chip" onclick="this.classList.toggle('on')">
+                <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                In-App
+              </div>
+            </div>
+          </div>
+          <div class="stg-section">
+            <div class="stg-section-title">Assignments & Deadlines</div>
+            <div class="stg-section-sub">Stay on top of your academic tasks</div>
+            <div class="stg-row">
+              <div class="stg-row-info"><div class="stg-row-label">Deadline reminders</div><div class="stg-row-desc">Alert me before an assignment is due</div></div>
+              <div class="toggle-wrap"><input type="checkbox" class="toggle" id="tDead" checked><label for="tDead"></label></div>
+            </div>
+            <div class="stg-row">
+              <div class="stg-row-info"><div class="stg-row-label">Remind me</div><div class="stg-row-desc">How far in advance to send the reminder</div></div>
+              <select class="stg-input" style="width:auto;cursor:pointer">
+                <option>1 day before</option><option selected>2 days before</option><option>3 days before</option><option>1 week before</option>
+              </select>
+            </div>
+            <div class="stg-row">
+              <div class="stg-row-info"><div class="stg-row-label">Task completion</div><div class="stg-row-desc">Notify when a task is marked complete</div></div>
+              <div class="toggle-wrap"><input type="checkbox" class="toggle" id="tTask" checked><label for="tTask"></label></div>
+            </div>
+          </div>
+          <div class="stg-section">
+            <div class="stg-section-title">Group & Collaboration</div>
+            <div class="stg-section-sub">Stay connected with your team</div>
+            <div class="stg-row">
+              <div class="stg-row-info"><div class="stg-row-label">New messages</div><div class="stg-row-desc">Notify when someone messages your group</div></div>
+              <div class="toggle-wrap"><input type="checkbox" class="toggle" id="tMsg" checked><label for="tMsg"></label></div>
+            </div>
+            <div class="stg-row">
+              <div class="stg-row-info"><div class="stg-row-label">Document edits</div><div class="stg-row-desc">Notify when a teammate edits a shared document</div></div>
+              <div class="toggle-wrap"><input type="checkbox" class="toggle" id="tDoc"><label for="tDoc"></label></div>
+            </div>
+            <div class="stg-row">
+              <div class="stg-row-info"><div class="stg-row-label">Member joins / leaves</div><div class="stg-row-desc">When someone joins or leaves your group</div></div>
+              <div class="toggle-wrap"><input type="checkbox" class="toggle" id="tMem" checked><label for="tMem"></label></div>
+            </div>
+          </div>
+          <div class="stg-section">
+            <div class="stg-section-title">Platform Updates</div>
+            <div class="stg-section-sub">Stay informed about Smart Planner</div>
+            <div class="stg-row">
+              <div class="stg-row-info"><div class="stg-row-label">Weekly summary</div><div class="stg-row-desc">Digest of your progress every Monday morning</div></div>
+              <div class="toggle-wrap"><input type="checkbox" class="toggle" id="tWeek" checked><label for="tWeek"></label></div>
+            </div>
+            <div class="stg-row">
+              <div class="stg-row-info"><div class="stg-row-label">Product updates</div><div class="stg-row-desc">Learn about new features and improvements</div></div>
+              <div class="toggle-wrap"><input type="checkbox" class="toggle" id="tProd"><label for="tProd"></label></div>
+            </div>
+          </div>
+          <button class="btn btn-primary" onclick="saveSettings('Notifications')">Save notification settings</button>
+        </div>
+
+        <!-- ── PRIVACY ── -->
+        <div class="stg-panel" id="panel-privacy">
+          <div class="stg-section">
+            <div class="stg-section-title">Profile Visibility</div>
+            <div class="stg-section-sub">Control who can see your profile on the platform</div>
+            <div class="privacy-cards">
+              <div class="privacy-card" onclick="selectPrivacy(this)">
+                <div class="privacy-card-icon">🌐</div>
+                <div class="privacy-card-label">Public</div>
+                <div class="privacy-card-desc">Anyone on Smart Planner can view your profile</div>
+              </div>
+              <div class="privacy-card sel" onclick="selectPrivacy(this)">
+                <div class="privacy-card-icon">🏫</div>
+                <div class="privacy-card-label">University Only</div>
+                <div class="privacy-card-desc">Only students from your university</div>
+              </div>
+              <div class="privacy-card" onclick="selectPrivacy(this)">
+                <div class="privacy-card-icon">🔒</div>
+                <div class="privacy-card-label">Private</div>
+                <div class="privacy-card-desc">Only your group members can see you</div>
+              </div>
+            </div>
+          </div>
+          <div class="stg-section">
+            <div class="stg-section-title">Activity & Presence</div>
+            <div class="stg-section-sub">Manage what others can see about your activity</div>
+            <div class="stg-row">
+              <div class="stg-row-info"><div class="stg-row-label">Show online status</div><div class="stg-row-desc">Display a green dot when you're active</div></div>
+              <div class="toggle-wrap"><input type="checkbox" class="toggle" id="tOnline" checked><label for="tOnline"></label></div>
+            </div>
+            <div class="stg-row">
+              <div class="stg-row-info"><div class="stg-row-label">Show last active time</div><div class="stg-row-desc">Let group members see when you were last online</div></div>
+              <div class="toggle-wrap"><input type="checkbox" class="toggle" id="tLast"><label for="tLast"></label></div>
+            </div>
+            <div class="stg-row">
+              <div class="stg-row-info"><div class="stg-row-label">Allow search visibility</div><div class="stg-row-desc">Allow other students to find you by name or email</div></div>
+              <div class="toggle-wrap"><input type="checkbox" class="toggle" id="tSearch" checked><label for="tSearch"></label></div>
+            </div>
+          </div>
+          <div class="stg-section">
+            <div class="stg-section-title">Your Data</div>
+            <div class="stg-section-sub">Manage your personal data stored on Smart Planner</div>
+            <div class="stg-row">
+              <div class="stg-row-info"><div class="stg-row-label">Export all my data</div><div class="stg-row-desc">Download a copy of your notes, assignments and settings</div></div>
+              <button class="btn btn-secondary btn-sm" onclick="exportData()">Export (.zip)</button>
+            </div>
+            <div class="stg-row">
+              <div class="stg-row-info"><div class="stg-row-label">Clear search history</div><div class="stg-row-desc">Remove all your recent searches from the platform</div></div>
+              <button class="btn btn-secondary btn-sm" style="color:#EF4444" onclick="clearHistory()">Clear history</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── INTEGRATIONS ── -->
+        <div class="stg-panel" id="panel-integrations">
+          <div class="stg-section">
+            <div class="stg-section-title">Connected Accounts</div>
+            <div class="stg-section-sub">Link external accounts for faster sign-in and data sync</div>
+            <div class="integ-card">
+              <div class="integ-logo" style="background:#EBF1FF">
+                <svg width="22" height="22" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+              </div>
+              <div class="integ-info">
+                <div class="integ-name">Google</div>
+                <div class="integ-status"><span class="integ-connected">● Connected</span> · shenzhixie2@gmail.com</div>
+              </div>
+              <button class="btn btn-secondary btn-sm" style="color:#EF4444" onclick="disconnectService(this,'Google')">Disconnect</button>
+            </div>
+            <div class="integ-card">
+              <div class="integ-logo" style="background:#f3f3f3">
+                <svg width="22" height="22" viewBox="0 0 24 24"><path fill="#F25022" d="M1 1h10v10H1z"/><path fill="#7FBA00" d="M13 1h10v10H13z"/><path fill="#00A4EF" d="M1 13h10v10H1z"/><path fill="#FFB900" d="M13 13h10v10H13z"/></svg>
+              </div>
+              <div class="integ-info">
+                <div class="integ-name">Microsoft</div>
+                <div class="integ-status" id="ms-status" style="color:var(--text-light)">Not connected</div>
+              </div>
+              <button class="btn btn-primary btn-sm" onclick="connectService(this,'Microsoft','ms-status')">Connect</button>
+            </div>
+            <div class="integ-card">
+              <div class="integ-logo" style="background:#F0FDF4">
+                <svg width="22" height="22" fill="none" stroke="#22C55E" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+              </div>
+              <div class="integ-info">
+                <div class="integ-name">Google Calendar</div>
+                <div class="integ-status" style="color:var(--text-light)">Sync your deadlines to Google Calendar</div>
+              </div>
+              <div class="toggle-wrap"><input type="checkbox" class="toggle" id="tGcal"><label for="tGcal"></label></div>
+            </div>
+          </div>
+          <div class="stg-section">
+            <div class="stg-section-title">Export & Backup</div>
+            <div class="stg-section-sub">Send your data to external services</div>
+            <div class="stg-row">
+              <div class="stg-row-info"><div class="stg-row-label">Export to Google Drive</div><div class="stg-row-desc">Save a backup of your notes and documents</div></div>
+              <button class="btn btn-secondary btn-sm" onclick="showToast('Exporting to Google Drive…')">Export</button>
+            </div>
+            <div class="stg-row">
+              <div class="stg-row-info"><div class="stg-row-label">Auto-sync deadlines</div><div class="stg-row-desc">Automatically push assignment due dates to calendar</div></div>
+              <div class="toggle-wrap"><input type="checkbox" class="toggle" id="tSync"><label for="tSync"></label></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── ABOUT ── -->
+        <div class="stg-panel" id="panel-about">
+          <div class="stg-section">
+            <div class="stg-section-title">App Information</div>
+            <div class="stg-section-sub">Smart Student Study Planner — WDT ITS63904</div>
+            <div class="about-grid">
+              <div class="about-item"><div class="about-item-label">Version</div><div class="about-item-value">v1.0.0</div></div>
+              <div class="about-item"><div class="about-item-label">Build</div><div class="about-item-value">2026.07.02</div></div>
+              <div class="about-item"><div class="about-item-label">Platform</div><div class="about-item-value">Web (HTML5)</div></div>
+              <div class="about-item"><div class="about-item-label">University</div><div class="about-item-value">Taylor's</div></div>
+            </div>
+          </div>
+          <div class="stg-section">
+            <div class="stg-section-title">Development Team</div>
+            <div class="stg-section-sub">WDT ITS63904 Group Project</div>
+            <div style="display:flex;flex-direction:column;gap:14px">
+              <div style="display:flex;align-items:center;gap:12px">
+                <div class="avatar" style="width:36px;height:36px;font-size:.7rem">XS</div>
+                <div><div style="font-size:.875rem;font-weight:700;color:var(--text)">Xie Shenzhi</div><div style="font-size:.75rem;color:var(--text-muted)">Frontend Developer · 0384864</div></div>
+              </div>
+              <div style="display:flex;align-items:center;gap:12px">
+                <div class="avatar" style="width:36px;height:36px;font-size:.7rem;background:linear-gradient(135deg,#0F766E,#4E9E9A)">MP</div>
+                <div><div style="font-size:.875rem;font-weight:700;color:var(--text)">Mora Patel</div><div style="font-size:.75rem;color:var(--text-muted)">Backend Developer · 0385021</div></div>
+              </div>
+              <div style="display:flex;align-items:center;gap:12px">
+                <div class="avatar" style="width:36px;height:36px;font-size:.7rem;background:linear-gradient(135deg,#6B21A8,#A855F7)">KQ</div>
+                <div><div style="font-size:.875rem;font-weight:700;color:var(--text)">Ke Qian</div><div style="font-size:.75rem;color:var(--text-muted)">UI/UX Designer · 0386114</div></div>
+              </div>
+            </div>
+          </div>
+          <div class="stg-section">
+            <div class="stg-section-title">Legal & Support</div>
+            <div>
+              <div class="about-link" onclick="showToast('Terms of Service — coming soon')">Terms of Service <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg></div>
+              <div class="about-link" onclick="showToast('Privacy Policy — coming soon')">Privacy Policy <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg></div>
+              <div class="about-link" onclick="showToast('Support: please email your tutor')">Contact Support <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg></div>
+              <div class="about-link" onclick="showToast('Feedback form — coming soon')">Send Feedback <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg></div>
+            </div>
+          </div>
+        </div>
+
+      </div><!-- /panels -->
+    </div><!-- /stg-wrap -->
+  </main>
+</div>
+
+<!-- Toast -->
+<div class="save-toast" id="saveToast">
+  <svg width="16" height="16" fill="none" stroke="#22C55E" stroke-width="2.5" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg>
+  <span id="toastMsg">Settings saved</span>
+</div>
+
+<script src="js/app.js"></script>
+<script>
+const menuBtn = document.getElementById('menuBtn');
+const sidebar = document.getElementById('sidebar');
+const overlay = document.getElementById('sidebarOverlay');
+menuBtn.addEventListener('click', () => { sidebar.classList.toggle('open'); overlay.classList.toggle('show'); });
+overlay.addEventListener('click', () => { sidebar.classList.remove('open'); overlay.classList.remove('show'); });
+
+function showPanel(id, el) {
+  document.querySelectorAll('.stg-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.stg-nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('panel-' + id).classList.add('active');
+  el.classList.add('active');
+}
+
+let toastTimer;
+function showToast(msg) {
+  clearTimeout(toastTimer);
+  const t = document.getElementById('saveToast');
+  document.getElementById('toastMsg').textContent = msg || 'Settings saved';
+  t.classList.add('show');
+  toastTimer = setTimeout(() => t.classList.remove('show'), 2800);
+}
+
+function selectTheme(t) {
+  ['light','dark','system'].forEach(x => document.getElementById('tc-'+x).classList.remove('sel'));
+  document.getElementById('tc-'+t).classList.add('sel');
+  const applied = t==='system' ? (window.matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light') : t;
+  document.documentElement.setAttribute('data-theme', applied);
+  localStorage.setItem('sp-theme', t);
+  showToast('Theme updated');
+}
+
+function selectAccent(el, color) {
+  document.querySelectorAll('.accent-swatch').forEach(s => s.classList.remove('sel'));
+  el.classList.add('sel');
+  document.documentElement.style.setProperty('--navy', color);
+  localStorage.setItem('sp-accent', color);
+  showToast('Accent color updated');
+}
+
+function setFontSize(input) {
+  const m = {1:['14px','0%'],2:['16px','50%'],3:['18px','100%']};
+  const [sz,pct] = m[input.value]||['16px','50%'];
+  document.documentElement.style.fontSize = sz;
+  input.style.setProperty('--pct', pct);
+}
+
+function checkPwdStrength(val) {
+  const bars = [1,2,3,4].map(i=>document.getElementById('pb'+i));
+  bars.forEach(b => b.className='pwd-bar');
+  const hint = document.getElementById('pwdHint');
+  if (!val) { hint.textContent='Enter a password to see its strength'; hint.style.color=''; return; }
+  let s=0;
+  if(val.length>=8)s++; if(/[A-Z]/.test(val))s++; if(/[0-9]/.test(val))s++; if(/[^A-Za-z0-9]/.test(val))s++;
+  if(val.length<8){ hint.textContent='Too short — minimum 8 characters'; hint.style.color='#EF4444'; bars[0].className='pwd-bar w'; return; }
+  const cls=['','w','f','g','s'], lbl=['','Too weak','Fair','Good — almost there','Strong ✓'], col=['','#EF4444','#F59E0B','#3B6ED4','#22C55E'];
+  for(let i=0;i<s;i++) bars[i].className='pwd-bar '+cls[s];
+  hint.textContent=lbl[s]; hint.style.color=col[s];
+}
+
+function changePassword() {
+  const cur=document.getElementById('curPwd').value, nw=document.getElementById('newPwd').value, cf=document.getElementById('confirmPwd').value;
+  if(!cur){showToast('Enter your current password');return;}
+  if(cur!==SP.currentUser().password){showToast('Current password is incorrect');return;}
+  if(nw.length<8){showToast('New password must be at least 8 characters');return;}
+  if(nw!==cf){showToast('Passwords do not match');return;}
+  SP.updateUser({password:nw});
+  ['curPwd','newPwd','confirmPwd'].forEach(id=>document.getElementById(id).value='');
+  [1,2,3,4].forEach(i=>document.getElementById('pb'+i).className='pwd-bar');
+  showToast('Password updated successfully');
+}
+
+function revokeSession(btn) {
+  const item=btn.closest('.session-item');
+  item.style.cssText+='transition:opacity .3s,transform .3s;opacity:0;transform:translateX(16px)';
+  setTimeout(()=>item.remove(),310); showToast('Session revoked');
+}
+function revokeAll() {
+  if(!confirm('Sign out of all other devices?'))return;
+  document.querySelectorAll('.session-item:not(:first-child)').forEach((item,i)=>{
+    setTimeout(()=>{item.style.cssText+='transition:opacity .3s;opacity:0';setTimeout(()=>item.remove(),310);},i*120);
+  }); showToast('Signed out of all other devices');
+}
+
+function selectPrivacy(card) {
+  document.querySelectorAll('.privacy-card').forEach(c=>c.classList.remove('sel'));
+  card.classList.add('sel');
+}
+
+function connectService(btn,name,statusId){
+  btn.disabled=true; btn.textContent='Connecting…';
+  setTimeout(()=>{
+    btn.disabled=false; btn.textContent='Disconnect';
+    btn.className='btn btn-secondary btn-sm'; btn.style.color='#EF4444';
+    btn.onclick=()=>disconnectService(btn,name,statusId);
+    const s=document.getElementById(statusId);
+    if(s) s.innerHTML='<span class="integ-connected">● Connected</span>';
+    showToast(name+' connected');
+  },1200);
+}
+function disconnectService(btn,name,statusId){
+  if(!confirm('Disconnect '+name+'?'))return;
+  btn.textContent='Connect'; btn.className='btn btn-primary btn-sm'; btn.style.color='';
+  btn.onclick=()=>connectService(btn,name,statusId);
+  const s=document.getElementById(statusId);
+  if(s){s.textContent='Not connected';s.style.color='var(--text-light)';}
+  showToast(name+' disconnected');
+}
+
+function previewAvatar(input){
+  if(!input.files||!input.files[0])return;
+  const r=new FileReader();
+  r.onload=e=>{
+    SP.updateUser({avatar:e.target.result});   /* persists + repaints all avatars */
+    showToast('Photo updated');
+  };
+  r.readAsDataURL(input.files[0]);
+}
+function removeAvatar(){SP.updateUser({avatar:''});showToast('Photo removed');}
+
+/* ── Profile: load from store, save back ── */
+function loadProfile(){
+  const u=SP.currentUser();
+  document.getElementById('pfFirst').value=u.first||'';
+  document.getElementById('pfLast').value=u.last||'';
+  document.getElementById('pfNickname').value=u.nickname||'';
+  document.getElementById('pfUsername').value=u.username||'';
+  document.getElementById('pfEmail').value=u.email||'';
+  document.getElementById('pfUniversity').value=u.university||"Taylor's University";
+  const prog=document.getElementById('pfProgram');
+  [...prog.options].forEach(o=>{o.selected=(o.text===u.program);});
+  const yr=document.querySelector('input[name="year"][value="'+(u.year||'2')+'"]');
+  if(yr)yr.checked=true;
+  const bio=document.getElementById('bioInput');
+  bio.value=u.bio||'';
+  document.getElementById('bioCount').textContent=bio.value.length+' / 160';
+  updateMetaRole(u);
+}
+function updateMetaRole(u){
+  document.getElementById('avatarMetaRole').textContent=
+    (u.program||'Student')+' · Year '+(u.year||'2')+' · '+(u.university||"Taylor's University");
+}
+function saveProfile(){
+  const nickname=document.getElementById('pfNickname').value.trim();
+  const first=document.getElementById('pfFirst').value.trim();
+  if(!first){showToast('First name is required');return;}
+  if(!nickname){showToast('Display name cannot be empty');return;}
+  const u=SP.updateUser({
+    first:first,
+    last:document.getElementById('pfLast').value.trim(),
+    nickname:nickname,
+    username:document.getElementById('pfUsername').value.trim().replace(/^@/,''),
+    university:document.getElementById('pfUniversity').value.trim(),
+    program:document.getElementById('pfProgram').value,
+    year:(document.querySelector('input[name="year"]:checked')||{}).value||'2',
+    bio:document.getElementById('bioInput').value
+  });
+  updateMetaRole(u);
+  showToast('Profile saved — nickname is now "'+u.nickname+'"');
+}
+function exportData(){showToast('Preparing export… check your email for the download link');}
+function clearHistory(){if(confirm('Clear all search history?'))showToast('Search history cleared');}
+function confirmDelete(){
+  const c=prompt('Type DELETE to permanently remove your account:');
+  if(c==='DELETE'){showToast('Account scheduled for deletion. Signing you out…');setTimeout(()=>window.location.href='login.html',2200);}
+}
+function saveSettings(s){showToast((s||'Settings')+' saved successfully');}
+
+(function(){
+  const t=localStorage.getItem('sp-theme'); if(t)selectTheme(t);
+  const a=localStorage.getItem('sp-accent');
+  if(a){document.documentElement.style.setProperty('--navy',a);document.querySelectorAll('.accent-swatch').forEach(s=>s.classList.toggle('sel',s.style.background===a));}
+  loadProfile();
+})();
+</script>
+</body>
+</html>

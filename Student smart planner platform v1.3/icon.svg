@@ -1,0 +1,20 @@
+<svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="spb" x1="0" y1="48" x2="48" y2="0" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#0F2449"/><stop offset=".62" stop-color="#1B3A6B"/><stop offset="1" stop-color="#3563C0"/>
+    </linearGradient>
+    <linearGradient id="spa" x1="12" y1="37" x2="36" y2="14" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#4E9E9A"/><stop offset="1" stop-color="#8FD6D2"/>
+    </linearGradient>
+    <radialGradient id="spg" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(36 10) rotate(115) scale(30)">
+      <stop offset="0" stop-color="#4E9E9A" stop-opacity=".38"/><stop offset="1" stop-color="#4E9E9A" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="48" height="48" rx="13" fill="url(#spb)"/>
+  <rect width="48" height="48" rx="13" fill="url(#spg)"/>
+  <path d="M12 37c9.5-.6 17-6.5 21-17.5" stroke="url(#spa)" stroke-width="3.4" stroke-linecap="round"/>
+  <path d="M12 30.5c7.2-.5 12.6-4.6 15.6-11.8" stroke="#fff" opacity=".5" stroke-width="2.9" stroke-linecap="round"/>
+  <path d="M12 24.2c4.8-.4 8.2-3 10.2-7.4" stroke="#fff" opacity=".24" stroke-width="2.5" stroke-linecap="round"/>
+  <path d="M36.6 7.6l1.55 3.55 3.55 1.55-3.55 1.55-1.55 3.55-1.55-3.55-3.55-1.55 3.55-1.55z" fill="#7FD1CC"/>
+  <circle cx="29.6" cy="26.4" r="1.5" fill="#fff" opacity=".85"/>
+</svg>
